@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+
+{% block title %}Verify OTP - My PSC Kerala{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center align-items-center" style="min-height: 70vh;">
+        <div class="col-md-5">
+            <div class="glass-card p-4 p-md-5 animate-fade-in-up">
+                <div class="text-center mb-4">
+                    <i class="fa-solid fa-shield-halved text-success fa-3x mb-3"></i>
+                    <h2 class="text-white">Verify Account</h2>
+                    <p class="text-muted small">We've sent a 6-digit verification code to <strong class="text-white">{{ email }}</strong>.</p>
+                </div>
+                
+                <form action="{% url 'verify_otp' %}" method="post">
+                    {% csrf_token %}
+                    
+                    <div class="mb-4">
+                        <label for="otp_code" class="form-label text-light small fw-medium">Enter 6-Digit OTP</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-transparent border-secondary text-muted"><i class="fa-solid fa-key"></i></span>
+                            <input type="text" class="form-control bg-transparent border-secondary text-white text-center fs-4 tracking-widest" id="otp_code" name="otp_code" required maxlength="6" pattern="\d{6}" placeholder="123456" autocomplete="one-time-code">
+                        </div>
+                        <div class="form-text text-muted small mt-2">The code is valid for 10 minutes. If you don't see it, check your spam/junk folder.</div>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-premium w-100 py-3 mb-3">Verify & Login</button>
+                    
+                    <div class="text-center">
+                        <span class="text-muted small">Didn't receive the code?</span>
+                        <a href="{% url 'register' %}" class="text-primary small fw-semibold text-decoration-none ms-1">Try again / Register again</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

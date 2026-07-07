@@ -1,0 +1,61 @@
+{% extends "admin/base_site.html" %}
+{% load i18n static %}
+
+{% block breadcrumbs %}
+<div class="breadcrumbs">
+<a href="{% url 'admin:index' %}">{% translate 'Home' %}</a>
+&rsaquo; Bulk Import Data
+</div>
+{% endblock %}
+
+{% block content %}
+<div id="content-main" style="max-width: 800px; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;">
+    <div style="background: #fff; border: 1px solid #ccc; padding: 25px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+        <h2>Upload Data File (CSV / Excel)</h2>
+        <p style="color: #666; margin-bottom: 25px;">
+            You can upload a CSV, XLS, or XLSX file containing Questions or Study Notes. The importer automatically detects the content type based on the columns.
+        </p>
+
+        <form action="{% url 'admin:bulk_import' %}" method="post" enctype="multipart/form-data" style="margin-bottom: 30px;">
+            {% csrf_token %}
+            <div style="margin-bottom: 20px;">
+                <label for="import_file" style="display: block; font-weight: bold; margin-bottom: 8px; color: #333;">Select File:</label>
+                <input type="file" id="import_file" name="import_file" accept=".csv, .xls, .xlsx" required style="padding: 10px; border: 1px solid #ccc; border-radius: 4px; width: 100%; max-width: 400px; box-sizing: border-box;">
+            </div>
+            
+            <div>
+                <input type="submit" value="Upload & Import" class="default" style="background: #79aec8; border: none; color: #fff; padding: 10px 20px; font-weight: bold; border-radius: 4px; cursor: pointer; transition: background 0.2s;">
+                <a href="{% url 'admin:index' %}" style="margin-left: 15px; text-decoration: none; color: #666; vertical-align: middle;">Cancel</a>
+            </div>
+        </form>
+
+        <hr style="border: 0; border-top: 1px solid #eee; margin: 30px 0;">
+
+        <h3>File Schema Guidelines</h3>
+        <div style="display: flex; gap: 20px; flex-wrap: wrap;">
+            <div style="flex: 1; min-width: 250px; background: #f9f9f9; padding: 15px; border-radius: 6px; border: 1px solid #e3e3e3;">
+                <h4 style="margin-top: 0; color: #2c3e50;">1. Questions Format</h4>
+                <p style="font-size: 13px; color: #555;">To import multiple choice questions, the file must include the following columns:</p>
+                <ul style="font-size: 12px; line-height: 1.5; color: #555; padding-left: 20px;">
+                    <li><code>class_name</code> (e.g., Class 10)</li>
+                    <li><code>subject_name</code> (e.g., Chemistry)</li>
+                    <li><code>question_text</code> (The question description)</li>
+                    <li><code>option_a</code>, <code>option_b</code>, <code>option_c</code>, <code>option_d</code></li>
+                    <li><code>correct_answer</code> (Must be <strong>A, B, C, or D</strong>)</li>
+                    <li><code>explanation</code> (Reasoning / details)</li>
+                </ul>
+            </div>
+            <div style="flex: 1; min-width: 250px; background: #f9f9f9; padding: 15px; border-radius: 6px; border: 1px solid #e3e3e3;">
+                <h4 style="margin-top: 0; color: #2c3e50;">2. Study Notes Format</h4>
+                <p style="font-size: 13px; color: #555;">To import notes and summaries, the file must include the following columns:</p>
+                <ul style="font-size: 12px; line-height: 1.5; color: #555; padding-left: 20px;">
+                    <li><code>class_name</code> (e.g., Class 10)</li>
+                    <li><code>subject_name</code> (e.g., Chemistry)</li>
+                    <li><code>title</code> (The title of the note)</li>
+                    <li><code>content</code> (Rich text or detailed text summary)</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
