@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}My PSC Kerala - Exam Cracker{% endblock %}</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <!-- Custom Premium Styles -->
+    <link href="/static/css/style.css" rel="stylesheet">
+    {% block extra_head %}{% endblock %}
+</head>
+<body>
+
+    <!-- Premium Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark navbar-premium sticky-top py-3">
+        <div class="container">
+            <a class="navbar-brand d-flex align-items-center" href="/">
+                <i class="fa-solid fa-graduation-cap text-primary fa-2x me-2"></i>
+                <span class="brand-name fs-4 tracking-tight text-white">My PSC <span class="text-primary">Kerala</span></span>
+            </a>
+            <button class="navbar-brand navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent" aria-controls="navbarContent" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarContent">
+                <ul class="navbar-nav ms-auto mb-2 mb-lg-0 align-items-center">
+                    {% if user.is_authenticated %}
+                        <li class="nav-item me-3">
+                            <a class="nav-link text-light" href="{% url 'dashboard' %}">
+                                <i class="fa-solid fa-house me-1"></i> Dashboard
+                            </a>
+                        </li>
+                        <li class="nav-item me-3">
+                            <a class="nav-link text-light" href="{% url 'profile' %}">
+                                <i class="fa-solid fa-user me-1"></i> My Profile
+                            </a>
+                        </li>
+                        {% if user.is_staff %}
+                            <li class="nav-item me-3">
+                                <a class="nav-link text-warning" href="{% url 'admin:index' %}" target="_blank">
+                                    <i class="fa-solid fa-lock me-1"></i> Admin Panel
+                                </a>
+                            </li>
+                        {% endif %}
+                        <li class="nav-item">
+                            <a class="btn btn-outline-light btn-sm px-3 py-2" href="{% url 'logout' %}">
+                                <i class="fa-solid fa-right-from-bracket me-1"></i> Logout
+                            </a>
+                        </li>
+                    {% else %}
+                        <li class="nav-item me-3">
+                            <a class="nav-link text-light" href="{% url 'login' %}">Login</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="btn btn-premium btn-sm px-4 py-2" href="{% url 'register' %}">Register</a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Messaging Alerts Section -->
+    <div class="container mt-4">
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{% if message.tags == 'error' %}danger{% elif message.tags == 'warning' %}warning{% elif message.tags == 'success' %}success{% else %}info{% endif %} alert-dismissible fade show glass-card border-0 text-white animate-fade-in-up" role="alert" style="background: rgba(30, 41, 59, 0.95);">
+                    <div class="d-flex align-items-center">
+                        {% if message.tags == 'error' %}
+                            <i class="fa-solid fa-circle-xmark me-2 text-danger fs-5"></i>
+                        {% elif message.tags == 'success' %}
+                            <i class="fa-solid fa-circle-check me-2 text-success fs-5"></i>
+                        {% elif message.tags == 'warning' %}
+                            <i class="fa-solid fa-triangle-exclamation me-2 text-warning fs-5"></i>
+                        {% else %}
+                            <i class="fa-solid fa-circle-info me-2 text-info fs-5"></i>
+                        {% endif %}
+                        <span>{{ message }}</span>
+                    </div>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+    </div>
+
+    <!-- Main Content Block -->
+    <main class="py-4">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="py-4 mt-auto border-top border-secondary border-opacity-10 text-center" style="background: rgba(15, 23, 42, 0.5);">
+        <div class="container text-muted small">
+            <p class="mb-1">&copy; 2026 My PSC Kerala. Designed for visual excellence & top performance.</p>
+            <p class="mb-0">Powered by Django & Django REST Framework.</p>
+        </div>
+    </footer>
+
+    <!-- Bootstrap 5 Bundle JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

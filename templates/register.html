@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+
+{% block title %}Register - My PSC Kerala{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center align-items-center" style="min-height: 70vh;">
+        <div class="col-md-5">
+            <div class="glass-card p-4 p-md-5 animate-fade-in-up">
+                <div class="text-center mb-4">
+                    <i class="fa-solid fa-user-plus text-primary fa-3x mb-3"></i>
+                    <h2 class="text-white">Create Account</h2>
+                    <p class="text-muted small">Register with your email to start practicing for Kerala PSC exams.</p>
+                </div>
+                
+                <form action="{% url 'register' %}" method="post">
+                    {% csrf_token %}
+                    
+                    <div class="mb-3">
+                        <label for="full_name" class="form-label text-light small fw-medium">Full Name</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-transparent border-secondary text-muted"><i class="fa-regular fa-user"></i></span>
+                            <input type="text" class="form-control bg-transparent border-secondary text-white" id="full_name" name="full_name" required placeholder="John Doe">
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="email" class="form-label text-light small fw-medium">Email Address</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-transparent border-secondary text-muted"><i class="fa-regular fa-envelope"></i></span>
+                            <input type="email" class="form-control bg-transparent border-secondary text-white" id="email" name="email" required placeholder="john@example.com">
+                        </div>
+                        <div class="form-text text-muted small">We'll send an OTP verification code to this email.</div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label for="password" class="form-label text-light small fw-medium">Password</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-transparent border-secondary text-muted"><i class="fa-solid fa-lock"></i></span>
+                            <input type="password" class="form-control bg-transparent border-secondary text-white" id="password" name="password" required placeholder="••••••••">
+                        </div>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-premium w-100 py-3 mb-3">Send OTP & Register</button>
+                    
+                    <div class="text-center">
+                        <span class="text-muted small">Already have an account?</span>
+                        <a href="{% url 'login' %}" class="text-primary small fw-semibold text-decoration-none ms-1">Login here</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

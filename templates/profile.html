@@ -1,0 +1,210 @@
+{% extends "base.html" %}
+
+{% block title %}My Profile & Analytics - My PSC Kerala{% endblock %}
+
+{% block extra_head %}
+<!-- Chart.js CDN -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+{% endblock %}
+
+{% block content %}
+<div class="container animate-fade-in-up">
+    <!-- Profile Hero Card -->
+    <div class="glass-card p-4 p-md-5 mb-5 text-white border-0">
+        <div class="row align-items-center">
+            <div class="col-md-auto text-center text-md-start mb-3 mb-md-0">
+                <div class="d-inline-flex align-items-center justify-content-center bg-primary rounded-circle text-white fw-bold fs-1 shadow-lg" style="width: 100px; height: 100px; background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%) !important;">
+                    {{ user.full_name|slice:":1"|upper }}
+                </div>
+            </div>
+            <div class="col-md text-center text-md-start">
+                <h1 class="text-white mb-1">{{ user.full_name }}</h1>
+                <p class="text-muted mb-0"><i class="fa-regular fa-envelope me-1"></i> {{ user.email }}</p>
+                <p class="text-muted small mb-0"><i class="fa-regular fa-calendar-days me-1"></i> Joined: {{ user.date_joined|date:"d M Y" }}</p>
+            </div>
+            <div class="col-md-auto text-center text-md-end mt-3 mt-md-0">
+                <span class="badge bg-primary bg-opacity-20 text-primary px-3 py-2 fs-6">
+                    <i class="fa-solid fa-graduation-cap me-1"></i> Practice Account
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stats Counter row -->
+    <div class="row g-4 mb-5">
+        <div class="col-md-4">
+            <div class="glass-card p-4 text-center text-white border-0 h-100">
+                <div class="p-3 d-inline-flex bg-primary bg-opacity-10 text-primary rounded-circle mb-3">
+                    <i class="fa-solid fa-list-check fa-2x"></i>
+                </div>
+                <h4 class="text-muted small uppercase fw-bold mb-1">Attempted MCQs</h4>
+                <h2 class="fw-bold mb-0 text-white">{{ total_attempted }}</h2>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="glass-card p-4 text-center text-white border-0 h-100">
+                <div class="p-3 d-inline-flex bg-success bg-opacity-10 text-success rounded-circle mb-3">
+                    <i class="fa-solid fa-circle-check fa-2x"></i>
+                </div>
+                <h4 class="text-muted small uppercase fw-bold mb-1">Correct Answers</h4>
+                <h2 class="fw-bold mb-0 text-success">{{ correct_attempts }}</h2>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="glass-card p-4 text-center text-white border-0 h-100">
+                <div class="p-3 d-inline-flex bg-warning bg-opacity-10 text-warning rounded-circle mb-3">
+                    <i class="fa-solid fa-gauge-simple-high fa-2x"></i>
+                </div>
+                <h4 class="text-muted small uppercase fw-bold mb-1">Overall Accuracy</h4>
+                <h2 class="fw-bold mb-0 text-warning">{{ accuracy }}%</h2>
+            </div>
+        </div>
+    </div>
+
+    <!-- Analytics Dashboard Panels -->
+    {% if total_attempted > 0 %}
+        <div class="row g-4 mb-5">
+            <!-- Left Side: Table breakdown -->
+            <div class="col-lg-6">
+                <div class="glass-card p-4 text-white border-0 h-100">
+                    <h3 class="text-white mb-4"><i class="fa-solid fa-chart-simple text-primary me-2"></i> Subject-Wise Practice</h3>
+                    <div class="table-responsive">
+                        <table class="table table-dark table-hover border-secondary border-opacity-10 mb-0 align-middle">
+                            <thead>
+                                <tr class="text-muted" style="border-bottom: 2px solid rgba(255,255,255,0.1);">
+                                    <th scope="col" style="background: transparent;">Subject</th>
+                                    <th scope="col" class="text-center" style="background: transparent;">Attempts</th>
+                                    <th scope="col" class="text-center" style="background: transparent;">Correct</th>
+                                    <th scope="col" class="text-end" style="background: transparent;">Accuracy</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in subject_wise_data %}
+                                    <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+                                        <td class="fw-semibold text-white" style="background: transparent;">{{ item.subject }}</td>
+                                        <td class="text-center text-muted" style="background: transparent;">{{ item.total }}</td>
+                                        <td class="text-center text-success" style="background: transparent;">{{ item.correct }}</td>
+                                        <td class="text-end" style="background: transparent;">
+                                            <span class="fw-bold {% if item.accuracy >= 70 %}text-success{% elif item.accuracy >= 40 %}text-warning{% else %}text-danger{% endif %}">
+                                                {{ item.accuracy }}%
+                                            </span>
+                                            <div class="progress bg-secondary bg-opacity-20 mt-1 ms-auto" style="height: 4px; width: 60px;">
+                                                <div class="progress-bar {% if item.accuracy >= 70 %}bg-success{% elif item.accuracy >= 40 %}bg-warning{% else %}bg-danger{% endif %}" role="progressbar" style="width: {{ item.accuracy }}%;"></div>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Side: Chart.js Graphs -->
+            <div class="col-lg-6">
+                <div class="glass-card p-4 text-white border-0 h-100">
+                    <h3 class="text-white mb-4"><i class="fa-solid fa-chart-pie text-success me-2"></i> Strengths & Weaknesses</h3>
+                    <div style="position: relative; height: 350px; width: 100%;">
+                        <canvas id="accuracyChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% else %}
+        <!-- Empty State -->
+        <div class="glass-card text-center p-5 text-muted mb-5">
+            <i class="fa-solid fa-chart-column fa-5x mb-4 text-secondary"></i>
+            <h2>No Practice Data Available</h2>
+            <p class="fs-5 mb-4">Practice some MCQs to generate statistical dashboards showing your strengths and weaknesses.</p>
+            <a href="{% url 'dashboard' %}" class="btn btn-premium px-5 py-3">
+                <i class="fa-solid fa-circle-play me-1"></i> Start Practicing Now
+            </a>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+{% if total_attempted > 0 %}
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        // Parse data from Django context variables
+        const labels = {{ chart_labels|safe }};
+        const accuracyData = {{ chart_accuracy|safe }};
+        
+        // Context for the chart
+        const ctx = document.getElementById('accuracyChart').getContext('2d');
+        
+        // Define color palette based on performance values dynamically
+        const backgroundColors = accuracyData.map(acc => {
+            if (acc >= 70) return 'rgba(16, 185, 129, 0.7)'; // Green
+            if (acc >= 40) return 'rgba(245, 158, 11, 0.7)'; // Orange/Yellow
+            return 'rgba(239, 68, 68, 0.7)'; // Red
+        });
+        
+        const borderColors = accuracyData.map(acc => {
+            if (acc >= 70) return '#10b981';
+            if (acc >= 40) return '#f59e0b';
+            return '#ef4444';
+        });
+
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Accuracy Rate (%)',
+                    data: accuracyData,
+                    backgroundColor: backgroundColors,
+                    borderColor: borderColors,
+                    borderWidth: 1.5,
+                    borderRadius: 6,
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return `Accuracy: ${context.raw}%`;
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 100,
+                        grid: {
+                            color: 'rgba(255, 255, 255, 0.05)'
+                        },
+                        ticks: {
+                            color: '#94a3b8',
+                            callback: function(value) {
+                                return value + "%";
+                            }
+                        }
+                    },
+                    x: {
+                        grid: {
+                            display: false
+                        },
+                        ticks: {
+                            color: '#94a3b8',
+                            font: {
+                                size: 12
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    });
+</script>
+{% endif %}
+{% endblock %}
