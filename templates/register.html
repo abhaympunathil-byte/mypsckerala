@@ -4,48 +4,52 @@
 
 {% block content %}
 <div class="container">
-    <div class="row justify-content-center align-items-center" style="min-height: 70vh;">
+    <div class="row justify-content-center align-items-center" style="min-height: 75vh;">
         <div class="col-md-5">
-            <div class="glass-card p-4 p-md-5 animate-fade-in-up">
+            <div class="card premium-card p-4 p-md-5 border-0 shadow-lg animate-fade-in-up bg-white">
                 <div class="text-center mb-4">
-                    <i class="fa-solid fa-user-plus text-primary fa-3x mb-3"></i>
-                    <h2 class="text-white">Create Account</h2>
-                    <p class="text-muted small">Register with your email to start practicing for Kerala PSC exams.</p>
+                    <div class="d-inline-flex align-items-center justify-content-center mb-3" style="width: 72px; height: 72px;">
+                        <img src="/static/images/logo.jpg" alt="Aspirant Kerala Logo" class="img-fluid rounded-circle border border-success" style="object-fit: cover; width: 100%; height: 100%;">
+                    </div>
+                    <h2 class="text-dark mb-1">Aspirant Registration</h2>
+                    <p class="text-muted small">Access Kerala's #1 learning portal for school & PSC exams.</p>
                 </div>
                 
                 <form action="{% url 'register' %}" method="post">
                     {% csrf_token %}
                     
                     <div class="mb-3">
-                        <label for="full_name" class="form-label text-light small fw-medium">Full Name</label>
+                        <label for="full_name" class="form-label text-dark small fw-semibold">Full Name</label>
                         <div class="input-group">
-                            <span class="input-group-text bg-transparent border-secondary text-muted"><i class="fa-regular fa-user"></i></span>
-                            <input type="text" class="form-control bg-transparent border-secondary text-white" id="full_name" name="full_name" required placeholder="John Doe">
+                            <span class="input-group-text bg-light border-light text-muted"><i class="fa-regular fa-user"></i></span>
+                            <input type="text" class="form-control bg-light border-light text-dark" id="full_name" name="full_name" required placeholder="John Doe">
                         </div>
                     </div>
                     
                     <div class="mb-3">
-                        <label for="email" class="form-label text-light small fw-medium">Email Address</label>
+                        <label for="email" class="form-label text-dark small fw-semibold">Email Address</label>
                         <div class="input-group">
-                            <span class="input-group-text bg-transparent border-secondary text-muted"><i class="fa-regular fa-envelope"></i></span>
-                            <input type="email" class="form-control bg-transparent border-secondary text-white" id="email" name="email" required placeholder="john@example.com">
+                            <span class="input-group-text bg-light border-light text-muted"><i class="fa-regular fa-envelope"></i></span>
+                            <input type="email" class="form-control bg-light border-light text-dark" id="email" name="email" required placeholder="student@example.com">
                         </div>
-                        <div class="form-text text-muted small">We'll send an OTP verification code to this email.</div>
+                        <div class="form-text text-muted small mt-1">We will send a 6-digit verification code to this email.</div>
                     </div>
                     
                     <div class="mb-4">
-                        <label for="password" class="form-label text-light small fw-medium">Password</label>
+                        <label for="password" class="form-label text-dark small fw-semibold">Password</label>
                         <div class="input-group">
-                            <span class="input-group-text bg-transparent border-secondary text-muted"><i class="fa-solid fa-lock"></i></span>
-                            <input type="password" class="form-control bg-transparent border-secondary text-white" id="password" name="password" required placeholder="••••••••">
+                            <span class="input-group-text bg-light border-light text-muted"><i class="fa-solid fa-lock"></i></span>
+                            <input type="password" class="form-control bg-light border-light text-dark" id="password" name="password" required placeholder="••••••••">
                         </div>
                     </div>
                     
-                    <button type="submit" class="btn btn-premium w-100 py-3 mb-3">Send OTP & Register</button>
+                    <button type="submit" class="btn btn-green w-100 py-3 mb-3">
+                        Send OTP & Register <i class="fa-solid fa-paper-plane ms-1"></i>
+                    </button>
                     
                     <div class="text-center">
                         <span class="text-muted small">Already have an account?</span>
-                        <a href="{% url 'login' %}" class="text-primary small fw-semibold text-decoration-none ms-1">Login here</a>
+                        <a href="{% url 'login' %}" class="text-success small fw-bold text-decoration-none ms-1">Login here</a>
                     </div>
                 </form>
             </div>

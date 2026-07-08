@@ -9,11 +9,19 @@ urlpatterns = [
     path('logout/', views.logout_view, name='logout'),
     
     # App paths
-    path('', views.dashboard_view, name='dashboard'),
+    path('', views.index_view, name='index'),
+    path('dashboard/', views.dashboard_view, name='dashboard'),
+    path('about/', views.about_view, name='about'),
+    path('upload-materials/', views.upload_materials_view, name='upload_materials'),
     path('class/<int:class_id>/', views.subjects_view, name='subjects'),
     path('subject/<int:subject_id>/', views.exam_view, name='exam'),
     path('profile/', views.profile_view, name='profile'),
     
+    # Live Mock Exams paths
+    path('live-exams/', views.live_exams_list_view, name='live_exams'),
+    path('live-exam/<int:test_id>/', views.live_exam_session_view, name='live_exam_session'),
+    
     # API endpoints
     path('api/attempts/', views.MCQAttemptView.as_view(), name='api_attempts'),
+    path('api/live-exam/submit/', views.SubmitLiveExamAPIView.as_view(), name='api_live_exam_submit'),
 ]
