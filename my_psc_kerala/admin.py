@@ -5,7 +5,8 @@ from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.db.models import Count
 from my_psc_kerala.models import (
-    PSCUser, ClassLevel, Subject, StudyNote, Question, UserPerformance, OTPVerification
+    PSCUser, ClassLevel, Subject, StudyNote, Question, UserPerformance, OTPVerification,
+    MockTest, MockTestAttempt, UserUpload
 )
 from my_psc_kerala.import_utils import import_data_from_file
 
@@ -107,3 +108,22 @@ class OTPVerificationAdmin(admin.ModelAdmin):
     list_display = ['email', 'otp_code', 'created_at', 'is_verified']
     list_filter = ['is_verified']
     search_fields = ['email']
+
+@admin.register(MockTest, site=admin_site)
+class MockTestAdmin(admin.ModelAdmin):
+    list_display = ['name', 'duration_minutes']
+    search_fields = ['name']
+    filter_horizontal = ['questions']
+
+@admin.register(MockTestAttempt, site=admin_site)
+class MockTestAttemptAdmin(admin.ModelAdmin):
+    list_display = ['user', 'mock_test', 'score', 'total_correct', 'total_wrong', 'attempted_date']
+    list_filter = ['attempted_date']
+    search_fields = ['user__email', 'mock_test__name']
+
+@admin.register(UserUpload, site=admin_site)
+class UserUploadAdmin(admin.ModelAdmin):
+    list_display = ['title', 'upload_type', 'user', 'uploaded_at', 'is_approved']
+    list_filter = ['upload_type', 'is_approved', 'uploaded_at']
+    search_fields = ['title', 'user__email', 'user__full_name']
+    list_editable = ['is_approved']

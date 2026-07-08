@@ -107,3 +107,38 @@ class UserPerformance(models.Model):
 
     def __str__(self):
         return f"{self.user.email} - Q{self.question.id} - Correct: {self.is_correct}"
+
+class MockTest(models.Model):
+    name = models.CharField(max_length=255)
+    duration_minutes = models.IntegerField(default=45)
+    questions = models.ManyToManyField(Question, related_name='mock_tests')
+
+    def __str__(self):
+        return f"{self.name} ({self.questions.count()} Questions)"
+
+class MockTestAttempt(models.Model):
+    user = models.ForeignKey(PSCUser, on_delete=models.CASCADE, related_name='mock_attempts')
+    mock_test = models.ForeignKey(MockTest, on_delete=models.CASCADE, related_name='attempts')
+    score = models.FloatField()
+    total_correct = models.IntegerField()
+    total_wrong = models.IntegerField()
+    attempted_date = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.user.email} - {self.mock_test.name} - Score: {self.score}"
+
+class UserUpload(models.Model):
+    UPLOAD_TYPES = (
+        ('study_note', 'Study Note'),
+        ('question_paper', 'Question Paper'),
+        ('other', 'Other'),
+    )
+    user = models.ForeignKey(PSCUser, on_delete=models.CASCADE, related_name='uploads')
+    title = models.CharField(max_length=255)
+    upload_type = models.CharField(max_length=20, choices=UPLOAD_TYPES, default='study_note')
+    file = models.FileField(upload_to='user_uploads/')
+    uploaded_at = models.DateTimeField(auto_now_add=True)
+    is_approved = models.BooleanField(default=False)
+
+    def __str__(self):
+        return f"{self.title} by {self.user.full_name}"

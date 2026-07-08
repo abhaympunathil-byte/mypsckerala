@@ -8,65 +8,75 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- FontAwesome Icons -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <!-- Custom Premium Styles -->
+    <!-- Custom Premium Academic Styles -->
     <link href="/static/css/style.css" rel="stylesheet">
     {% block extra_head %}{% endblock %}
 </head>
-<body>
+<body class="d-flex flex-column min-vh-100 {% block body_class %}{% endblock %}">
 
     <!-- Premium Navbar -->
-    <nav class="navbar navbar-expand-lg navbar-dark navbar-premium sticky-top py-3">
+    <nav class="navbar navbar-expand-lg navbar-light navbar-academic sticky-top py-3">
         <div class="container">
             <a class="navbar-brand d-flex align-items-center" href="/">
-                <i class="fa-solid fa-graduation-cap text-primary fa-2x me-2"></i>
-                <span class="brand-name fs-4 tracking-tight text-white">My PSC <span class="text-primary">Kerala</span></span>
+                <img src="/static/images/logo.jpg" alt="Aspirant Kerala Logo" width="40" height="40" class="me-2 rounded-circle border border-success" style="object-fit: cover;">
+                <span class="brand-name fs-4 text-dark">Aspirant <span class="text-success">Kerala</span></span>
             </a>
-            <button class="navbar-brand navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent" aria-controls="navbarContent" aria-expanded="false" aria-label="Toggle navigation">
+            <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent" aria-controls="navbarContent" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarContent">
+                <ul class="navbar-nav me-auto ms-lg-4 mb-2 mb-lg-0 align-items-center">
+                    {% if user.is_authenticated %}
+                        <li class="nav-item">
+                            <a class="nav-link {% block nav_modules %}{% endblock %}" href="{% url 'dashboard' %}">Modules</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% block nav_live %}{% endblock %}" href="{% url 'live_exams' %}">Live Exams</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% block nav_analytics %}{% endblock %}" href="{% url 'profile' %}">Analytics</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#" onclick="alert('Previous Papers modules will be available shortly!')">Previous Papers</a>
+                        </li>
+                    {% endif %}
+                    <li class="nav-item">
+                        <a class="nav-link {% block nav_about %}{% endblock %}" href="{% url 'about' %}">About Us</a>
+                    </li>
+                </ul>
                 <ul class="navbar-nav ms-auto mb-2 mb-lg-0 align-items-center">
                     {% if user.is_authenticated %}
                         <li class="nav-item me-3">
-                            <a class="nav-link text-light" href="{% url 'dashboard' %}">
-                                <i class="fa-solid fa-house me-1"></i> Dashboard
-                            </a>
+                            <span class="text-muted small fw-medium">Logged in as <strong class="text-dark">{{ user.full_name }}</strong></span>
                         </li>
-                        <li class="nav-item me-3">
-                            <a class="nav-link text-light" href="{% url 'profile' %}">
-                                <i class="fa-solid fa-user me-1"></i> My Profile
-                            </a>
-                        </li>
-                        {% if user.is_staff %}
-                            <li class="nav-item me-3">
-                                <a class="nav-link text-warning" href="{% url 'admin:index' %}" target="_blank">
-                                    <i class="fa-solid fa-lock me-1"></i> Admin Panel
-                                </a>
-                            </li>
-                        {% endif %}
                         <li class="nav-item">
-                            <a class="btn btn-outline-light btn-sm px-3 py-2" href="{% url 'logout' %}">
+                            <a class="btn btn-green-outline btn-sm px-3 py-2" href="{% url 'logout' %}">
                                 <i class="fa-solid fa-right-from-bracket me-1"></i> Logout
                             </a>
                         </li>
                     {% else %}
                         <li class="nav-item me-3">
-                            <a class="nav-link text-light" href="{% url 'login' %}">Login</a>
+                            <a class="nav-link text-dark fw-semibold" href="{% url 'login' %}">Login</a>
                         </li>
-                        <li class="nav-item">
-                            <a class="btn btn-premium btn-sm px-4 py-2" href="{% url 'register' %}">Register</a>
+                        <li class="nav-item me-3">
+                            <a class="btn btn-green btn-sm px-4 py-2" href="{% url 'register' %}">Start Free Trial</a>
                         </li>
                     {% endif %}
+                    <li class="nav-item ms-3">
+                        <a class="btn btn-outline-warning btn-sm" href="{% url 'admin:index' %}" target="_blank">
+                            <i class="fa-solid fa-lock me-1"></i> Admin Panel
+                        </a>
+                    </li>
                 </ul>
             </div>
         </div>
     </nav>
 
     <!-- Messaging Alerts Section -->
-    <div class="container mt-4">
+    <div class="container mt-3 mb-1">
         {% if messages %}
             {% for message in messages %}
-                <div class="alert alert-{% if message.tags == 'error' %}danger{% elif message.tags == 'warning' %}warning{% elif message.tags == 'success' %}success{% else %}info{% endif %} alert-dismissible fade show glass-card border-0 text-white animate-fade-in-up" role="alert" style="background: rgba(30, 41, 59, 0.95);">
+                <div class="alert alert-{% if message.tags == 'error' %}danger{% elif message.tags == 'warning' %}warning{% elif message.tags == 'success' %}success{% else %}info{% endif %} alert-dismissible fade show border-0 shadow-sm animate-fade-in-up" role="alert">
                     <div class="d-flex align-items-center">
                         {% if message.tags == 'error' %}
                             <i class="fa-solid fa-circle-xmark me-2 text-danger fs-5"></i>
@@ -75,26 +85,26 @@
                         {% elif message.tags == 'warning' %}
                             <i class="fa-solid fa-triangle-exclamation me-2 text-warning fs-5"></i>
                         {% else %}
-                            <i class="fa-solid fa-circle-info me-2 text-info fs-5"></i>
+                            <i class="fa-solid fa-circle-info me-2 text-primary fs-5"></i>
                         {% endif %}
-                        <span>{{ message }}</span>
+                        <span class="text-dark">{{ message }}</span>
                     </div>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert" aria-label="Close"></button>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                 </div>
             {% endfor %}
         {% endif %}
     </div>
 
-    <!-- Main Content Block -->
-    <main class="py-4">
+    <!-- Main Content Container (Single content block for simplicity) -->
+    <main class="flex-grow-1 d-flex flex-column">
         {% block content %}{% endblock %}
     </main>
 
     <!-- Footer -->
-    <footer class="py-4 mt-auto border-top border-secondary border-opacity-10 text-center" style="background: rgba(15, 23, 42, 0.5);">
+    <footer class="py-4 mt-auto border-top border-secondary border-opacity-10 text-center bg-white shadow-sm">
         <div class="container text-muted small">
-            <p class="mb-1">&copy; 2026 My PSC Kerala. Designed for visual excellence & top performance.</p>
-            <p class="mb-0">Powered by Django & Django REST Framework.</p>
+            <p class="mb-1">&copy; 2026 My PSC Kerala. Structured preparation for administrative success.</p>
+            <p class="mb-0">Powered by Django & DRF.</p>
         </div>
     </footer>
 

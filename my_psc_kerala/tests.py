@@ -2,7 +2,10 @@ from django.test import TestCase, Client
 from django.urls import reverse
 from django.utils import timezone
 from rest_framework import status
-from my_psc_kerala.models import PSCUser, OTPVerification, ClassLevel, Subject, Question, UserPerformance
+from my_psc_kerala.models import (
+    PSCUser, OTPVerification, ClassLevel, Subject, Question, UserPerformance,
+    MockTest, MockTestAttempt
+)
 import json
 
 class MyPSCKeralaTests(TestCase):
@@ -127,3 +130,48 @@ class MyPSCKeralaTests(TestCase):
         
         resp_data = response.json()
         self.assertFalse(resp_data['is_correct'])
+
+    def test_live_mock_exam(self):
+        """Test Live Exam creation and submission with penalty scoring system (+2.0 / -0.66)"""
+        # Create a second question to test both correct and wrong answers in same attempt
+        question2 = Question.objects.create(
+            subject=self.subject,
+            question_text="What is CO2?",
+            option_a="Oxygen",
+            option_b="Nitrogen",
+            option_c="Carbon Dioxide",
+            option_d="Hydrogen",
+            correct_answer="C",
+            explanation="CO2 is Carbon Dioxide."
+        )
+
+        mock_test = MockTest.objects.create(name="KAS Mock Test 1", duration_minutes=45)
+        mock_test.questions.add(self.question)
+        mock_test.questions.add(question2)
+
+        # Login user
+        self.client.login(username=self.verified_user.email, password="verifiedpassword123")
+
+        # Submit answers: Correct for Q1 (B), Wrong for Q2 (A)
+        url = reverse('api_live_exam_submit')
+        data = {
+            'mock_test_id': mock_test.id,
+            'answers': {
+                str(self.question.id): "B", # Correct (+2.0)
+                str(question2.id): "A"       # Incorrect (-0.66)
+            }
+        }
+        response = self.client.post(url, data=json.dumps(data), content_type='application/json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        resp_data = response.json()
+        self.assertEqual(resp_data['total_correct'], 1)
+        self.assertEqual(resp_data['total_wrong'], 1)
+        
+        # 1 * 2.0 - 1 * 0.66 = 1.34
+        self.assertEqual(resp_data['score'], 1.34)
+
+        # Verify MockTestAttempt created
+        attempt = MockTestAttempt.objects.filter(user=self.verified_user, mock_test=mock_test).first()
+        self.assertIsNotNone(attempt)
+        self.assertEqual(attempt.score, 1.34)

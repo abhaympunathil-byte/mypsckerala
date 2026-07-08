@@ -1,91 +1,94 @@
-{% extends "base.html" %}
+{% extends "app_base.html" %}
 
 {% block title %}{{ subject.name }} Exam - My PSC Kerala{% endblock %}
 
-{% block content %}
-<div class="container animate-fade-in-up">
+{% block side_subjects %}active{% endblock %}
+{% block nav_modules %}active{% endblock %}
+
+{% block app_content %}
+<div class="animate-fade-in-up">
     <!-- Breadcrumb -->
     <nav aria-label="breadcrumb" class="mb-4">
         <ol class="breadcrumb">
-            <li class="breadcrumb-item"><a href="{% url 'dashboard' %}" class="text-primary text-decoration-none">Dashboard</a></li>
-            <li class="breadcrumb-item"><a href="{% url 'subjects' subject.class_level.id %}" class="text-primary text-decoration-none">{{ subject.class_level.name }}</a></li>
-            <li class="breadcrumb-item active text-white" aria-current="page">{{ subject.name }} Quiz</li>
+            <li class="breadcrumb-item"><a href="{% url 'dashboard' %}" class="text-success text-decoration-none">Dashboard</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'subjects' subject.class_level.id %}" class="text-success text-decoration-none">{{ subject.class_level.name }}</a></li>
+            <li class="breadcrumb-item active text-dark" aria-current="page">{{ subject.name }} Quiz</li>
         </ol>
     </nav>
 
     <!-- Header Section -->
-    <div class="d-flex justify-content-between align-items-center mb-4 pb-3 border-bottom border-secondary border-opacity-10">
+    <div class="d-flex justify-content-between align-items-center mb-4 pb-3 border-bottom border-light">
         <div>
-            <h1 class="text-white mb-1">{{ subject.name }} MCQ Practice</h1>
-            <p class="text-muted mb-0">Topic-based practice for SCERT Syllabus.</p>
+            <h1 class="text-dark mb-1">{{ subject.name }} MCQ Practice</h1>
+            <p class="text-muted mb-0">Topic-based school practice modules.</p>
         </div>
-        <a href="{% url 'subjects' subject.class_level.id %}" class="btn btn-outline-light" onclick="return confirm('Are you sure you want to exit the exam? Your progress will be lost.')">
-            <i class="fa-solid fa-right-from-bracket me-1"></i> Exit Exam
+        <a href="{% url 'subjects' subject.class_level.id %}" class="btn btn-outline-secondary btn-sm" onclick="return confirm('Exit current practice quiz? Progress will not be saved.')">
+            <i class="fa-solid fa-right-from-bracket me-1"></i> Exit practice
         </a>
     </div>
 
     <!-- Exam Container -->
     <div class="row justify-content-center">
-        <div class="col-lg-8">
+        <div class="col-lg-10">
             
             <!-- Progress Tracker -->
-            <div class="glass-card p-3 mb-4 text-white border-0">
+            <div class="card premium-card p-3 mb-4 border-0 bg-white shadow-sm">
                 <div class="d-flex justify-content-between align-items-center mb-2">
-                    <span class="small text-muted fw-semibold">PROGRESS</span>
-                    <span class="small text-white fw-bold" id="progress-text">Question 1 of {{ questions|length }}</span>
+                    <span class="small text-muted fw-bold">PRACTICE PROGRESS</span>
+                    <span class="small text-success fw-bold" id="progress-text">Question 1 of {{ questions|length }}</span>
                 </div>
-                <div class="progress bg-secondary bg-opacity-20" style="height: 6px;">
-                    <div class="progress-bar bg-primary" id="exam-progress-bar" role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+                <div class="progress bg-light" style="height: 6px; border-radius: 10px;">
+                    <div class="progress-bar bg-success" id="exam-progress-bar" role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
                 </div>
             </div>
 
             <!-- Quiz Questions Slider -->
             <div id="quiz-container">
                 {% for question in questions %}
-                    <div class="quiz-question-card glass-card p-4 p-md-5 mb-4 text-white border-0 animate-fade-in-up" 
+                    <div class="quiz-question-card card premium-card p-4 p-md-5 mb-4 border-0 bg-white shadow-md animate-fade-in-up" 
                          id="q-card-{{ forloop.counter }}" 
                          data-question-index="{{ forloop.counter }}" 
                          style="{% if not forloop.first %}display: none;{% endif %}">
                         
                         <!-- Question Header -->
                         <div class="d-flex justify-content-between align-items-center mb-4">
-                            <span class="badge bg-primary bg-opacity-10 text-primary px-3 py-2 fw-semibold">PSC MCQ #{{ question.id }}</span>
-                            <span class="small text-muted"><i class="fa-solid fa-circle-question me-1"></i> Single Choice</span>
+                            <span class="badge bg-success bg-opacity-10 text-success px-3 py-2 fw-bold" style="font-size: 13px;">SCERT MODULE MCQ</span>
+                            <span class="small text-muted"><i class="fa-solid fa-circle-question me-1"></i> Select one answer</span>
                         </div>
 
                         <!-- Question Text -->
-                        <h3 class="mb-4 text-white lh-base fw-medium" style="font-size: 20px;">
+                        <h3 class="mb-4 text-dark lh-base fw-bold" style="font-size: 19px;">
                             {{ forloop.counter }}. {{ question.question_text }}
                         </h3>
 
                         <!-- Options List -->
                         <div class="options-container mb-4">
-                            <button class="option-btn" data-question-id="{{ question.id }}" data-option="A">
-                                <strong class="me-2 text-primary">A.</strong> <span class="option-text">{{ question.option_a }}</span>
+                            <button class="exam-option-btn" data-question-id="{{ question.id }}" data-option="A">
+                                <span class="option-badge">A</span> <span class="option-text">{{ question.option_a }}</span>
                             </button>
-                            <button class="option-btn" data-question-id="{{ question.id }}" data-option="B">
-                                <strong class="me-2 text-primary">B.</strong> <span class="option-text">{{ question.option_b }}</span>
+                            <button class="exam-option-btn" data-question-id="{{ question.id }}" data-option="B">
+                                <span class="option-badge">B</span> <span class="option-text">{{ question.option_b }}</span>
                             </button>
-                            <button class="option-btn" data-question-id="{{ question.id }}" data-option="C">
-                                <strong class="me-2 text-primary">C.</strong> <span class="option-text">{{ question.option_c }}</span>
+                            <button class="exam-option-btn" data-question-id="{{ question.id }}" data-option="C">
+                                <span class="option-badge">C</span> <span class="option-text">{{ question.option_c }}</span>
                             </button>
-                            <button class="option-btn" data-question-id="{{ question.id }}" data-option="D">
-                                <strong class="me-2 text-primary">D.</strong> <span class="option-text">{{ question.option_d }}</span>
+                            <button class="exam-option-btn" data-question-id="{{ question.id }}" data-option="D">
+                                <span class="option-badge">D</span> <span class="option-text">{{ question.option_d }}</span>
                             </button>
                         </div>
 
                         <!-- Explanation and Feedback Area (Hidden initially) -->
-                        <div class="explanation-box p-4 rounded-3 border-0 mb-4 animate-fade-in-up" id="explanation-box-{{ question.id }}" style="display: none;">
+                        <div class="explanation-card animate-fade-in-up" id="explanation-box-{{ question.id }}" style="display: none;">
                             <div class="d-flex align-items-center mb-3">
                                 <span class="feedback-icon me-2"></span>
                                 <h5 class="feedback-title mb-0 fw-bold"></h5>
                             </div>
-                            <div class="explanation-content small lh-lg"></div>
+                            <div class="explanation-content small lh-lg text-dark"></div>
                         </div>
 
                         <!-- Card Navigation Footer -->
                         <div class="d-flex justify-content-end align-items-center">
-                            <button class="btn btn-premium next-question-btn py-2 px-4" style="display: none;" data-current-index="{{ forloop.counter }}">
+                            <button class="btn btn-green next-question-btn py-2 px-4" style="display: none;" data-current-index="{{ forloop.counter }}">
                                 Next Question <i class="fa-solid fa-arrow-right ms-1"></i>
                             </button>
                         </div>
@@ -94,38 +97,38 @@
             </div>
 
             <!-- Quiz Complete / Summary Screen (Hidden initially) -->
-            <div id="quiz-complete-card" class="glass-card p-5 text-center text-white border-0 animate-fade-in-up" style="display: none;">
+            <div id="quiz-complete-card" class="card premium-card p-5 text-center border-0 bg-white shadow-lg animate-fade-in-up" style="display: none;">
                 <i class="fa-solid fa-circle-check text-success fa-5x mb-4"></i>
-                <h2 class="mb-3">Quiz Completed!</h2>
-                <p class="text-muted fs-5 mb-4">You have finished the quiz practice module for <strong>{{ subject.name }}</strong>.</p>
+                <h2 class="mb-3 text-dark">Practice Module Complete!</h2>
+                <p class="text-muted fs-5 mb-4">You have successfully practice completed for <strong>{{ subject.name }}</strong>.</p>
                 
                 <!-- Score Summary Cards -->
                 <div class="row g-3 justify-content-center mb-5">
                     <div class="col-6 col-sm-4">
-                        <div class="p-3 rounded bg-secondary bg-opacity-10 border border-secondary border-opacity-10">
-                            <div class="text-muted small uppercase fw-bold mb-1">TOTAL QUESTIONS</div>
-                            <h3 class="fw-bold mb-0 text-white" id="summary-total">{{ questions|length }}</h3>
+                        <div class="p-3 rounded bg-light border border-light">
+                            <div class="text-muted small fw-bold mb-1">TOTAL QUESTIONS</div>
+                            <h3 class="fw-bold mb-0 text-dark" id="summary-total">{{ questions|length }}</h3>
                         </div>
                     </div>
                     <div class="col-6 col-sm-4">
                         <div class="p-3 rounded bg-success bg-opacity-10 border border-success border-opacity-10">
-                            <div class="text-success small uppercase fw-bold mb-1">CORRECT ANSWERS</div>
+                            <div class="text-success small fw-bold mb-1">CORRECT ANSWERS</div>
                             <h3 class="fw-bold mb-0 text-success" id="summary-correct">0</h3>
                         </div>
                     </div>
                     <div class="col-6 col-sm-4">
-                        <div class="p-3 rounded bg-primary bg-opacity-10 border border-primary border-opacity-10">
-                            <div class="text-primary small uppercase fw-bold mb-1">ACCURACY RATE</div>
-                            <h3 class="fw-bold mb-0 text-primary" id="summary-accuracy">0%</h3>
+                        <div class="p-3 rounded bg-success bg-opacity-10 border border-success border-opacity-10">
+                            <div class="text-success small fw-bold mb-1">ACCURACY</div>
+                            <h3 class="fw-bold mb-0 text-success" id="summary-accuracy">0%</h3>
                         </div>
                     </div>
                 </div>
 
                 <div class="d-flex flex-column flex-sm-row justify-content-center gap-3">
-                    <a href="{% url 'subjects' subject.class_level.id %}" class="btn btn-outline-light py-3 px-4">
-                        <i class="fa-solid fa-rotate-left me-1"></i> Practice Another Topic
+                    <a href="{% url 'subjects' subject.class_level.id %}" class="btn btn-green-outline py-3 px-4">
+                        <i class="fa-solid fa-rotate-left me-1"></i> Practice More Topics
                     </a>
-                    <a href="{% url 'profile' %}" class="btn btn-premium py-3 px-4">
+                    <a href="{% url 'profile' %}" class="btn btn-green py-3 px-4">
                         <i class="fa-solid fa-chart-line me-1"></i> Go to Analytics Dashboard
                     </a>
                 </div>
@@ -148,11 +151,10 @@
         updateProgressBar();
 
         // Option selection trigger
-        $('.option-btn').on('click', function() {
+        $('.exam-option-btn').on('click', function() {
             const $clickedBtn = $(this);
             const $parentCard = $clickedBtn.closest('.quiz-question-card');
             
-            // Prevent multiple submissions for the same card
             if ($parentCard.hasClass('answered')) {
                 return;
             }
@@ -160,7 +162,6 @@
             const questionId = $clickedBtn.data('question-id');
             const selectedOption = $clickedBtn.data('option');
 
-            // Visual feedback: add active select class
             $clickedBtn.addClass('selected');
             $parentCard.addClass('answered');
 
@@ -177,45 +178,41 @@
                     'X-CSRFToken': csrfToken
                 },
                 success: function(response) {
-                    const $explanationBox = $parentCard.find('.explanation-box');
+                    const $explanationBox = $parentCard.find('.explanation-card');
                     const $feedbackIcon = $explanationBox.find('.feedback-icon');
                     const $feedbackTitle = $explanationBox.find('.feedback-title');
                     const $explanationContent = $explanationBox.find('.explanation-content');
                     const $nextBtn = $parentCard.find('.next-question-btn');
 
                     // Disable options visually
-                    $parentCard.find('.option-btn').attr('disabled', true);
+                    $parentCard.find('.exam-option-btn').attr('disabled', true);
 
                     if (response.is_correct) {
                         $clickedBtn.removeClass('selected').addClass('correct');
                         
-                        // Style explanation box as Success (Green)
                         $explanationBox.css({
-                            'background': 'rgba(16, 185, 129, 0.08)',
-                            'border-left': '4px solid var(--accent-success)',
-                            'color': '#a7f3d0'
+                            'background-color': '#ecfdf5',
+                            'border-left': '4px solid var(--success-color)',
+                            'color': '#065f46'
                         });
                         $feedbackIcon.html('<i class="fa-solid fa-circle-check text-success fs-4"></i>');
-                        $feedbackTitle.text('Correct Answer!').css('color', '#34d399');
+                        $feedbackTitle.text('Correct Answer!').css('color', '#065f46');
                         score++;
                     } else {
                         $clickedBtn.removeClass('selected').addClass('wrong');
+                        $parentCard.find(`.exam-option-btn[data-option="${response.correct_answer}"]`).addClass('correct');
                         
-                        // Highlight the correct answer option
-                        $parentCard.find(`.option-btn[data-option="${response.correct_answer}"]`).addClass('correct');
-                        
-                        // Style explanation box as Danger (Red)
                         $explanationBox.css({
-                            'background': 'rgba(239, 68, 68, 0.08)',
-                            'border-left': '4px solid var(--accent-danger)',
-                            'color': '#fca5a5'
+                            'background-color': '#fef2f2',
+                            'border-left': '4px solid var(--danger-color)',
+                            'color': '#991b1b'
                         });
                         $feedbackIcon.html('<i class="fa-solid fa-circle-xmark text-danger fs-4"></i>');
-                        $feedbackTitle.text(`Incorrect. The correct option is ${response.correct_answer}.`).css('color', '#f87171');
+                        $feedbackTitle.text(`Incorrect. The correct answer was option ${response.correct_answer}`).css('color', '#991b1b');
                     }
 
                     // Set Explanation text
-                    $explanationContent.text(response.explanation || 'No explanation provided.');
+                    $explanationContent.html(response.explanation || 'No explanation details available.');
                     $explanationBox.slideDown(250);
 
                     // Show next button
@@ -255,15 +252,10 @@
         }
 
         function showSummaryScreen() {
-            // Fill final values
             const accuracy = totalQuestions > 0 ? Math.round((score / totalQuestions) * 100) : 0;
             $('#summary-correct').text(score);
             $('#summary-accuracy').text(`${accuracy}%`);
-            
-            // Hide tracker bar container
             $('.progress').parent().parent().hide();
-            
-            // Show complete card
             $('#quiz-complete-card').fadeIn(400);
         }
     });

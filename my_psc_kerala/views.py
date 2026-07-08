@@ -16,7 +16,8 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
 
 from my_psc_kerala.models import (
-    PSCUser, OTPVerification, ClassLevel, Subject, StudyNote, Question, UserPerformance
+    PSCUser, OTPVerification, ClassLevel, Subject, StudyNote, Question, UserPerformance,
+    MockTest, MockTestAttempt, UserUpload
 )
 from my_psc_kerala.serializers import MCQAttemptSerializer
 
@@ -189,6 +190,38 @@ def logout_view(request):
 
 # --- APPLICATION FLOW VIEWS ---
 
+def index_view(request):
+    if request.user.is_authenticated:
+        return redirect('dashboard')
+    return render(request, 'index.html')
+
+def about_view(request):
+    return render(request, 'about.html')
+
+@login_required
+def upload_materials_view(request):
+    if request.method == 'POST':
+        title = request.POST.get('title')
+        upload_type = request.POST.get('upload_type')
+        uploaded_file = request.FILES.get('file')
+        
+        if title and upload_type and uploaded_file:
+            UserUpload.objects.create(
+                user=request.user,
+                title=title,
+                upload_type=upload_type,
+                file=uploaded_file
+            )
+            messages.success(request, "Your material has been uploaded successfully and is pending admin approval!")
+            return redirect('upload_materials')
+        else:
+            messages.error(request, "Please provide title, upload type, and select a file.")
+            
+    # Get user's previous uploads
+    user_uploads = UserUpload.objects.filter(user=request.user).order_by('-uploaded_at')
+    
+    return render(request, 'upload_materials.html', {'user_uploads': user_uploads})
+
 @login_required
 def dashboard_view(request):
     class_levels = ClassLevel.objects.all().order_by('name')
@@ -235,10 +268,16 @@ def exam_view(request, subject_id):
 def profile_view(request):
     user = request.user
     attempts = UserPerformance.objects.filter(user=user)
+    mock_attempts = MockTestAttempt.objects.filter(user=user).order_by('-attempted_date')
     
     total_attempted = attempts.count()
     correct_attempts = attempts.filter(is_correct=True).count()
     accuracy = round((correct_attempts / total_attempted * 100), 2) if total_attempted > 0 else 0
+    
+    mock_tests_count = mock_attempts.count()
+    # Dynamic hours studied formula: 3 minutes per practice MCQ + 45 minutes per mock test
+    total_minutes = (total_attempted * 3) + (mock_tests_count * 45)
+    hours_studied = round(total_minutes / 60, 1)
     
     # Subject-wise statistics
     subject_stats = attempts.values('question__subject__name').annotate(
@@ -276,12 +315,61 @@ def profile_view(request):
         'total_attempted': total_attempted,
         'correct_attempts': correct_attempts,
         'accuracy': accuracy,
+        'mock_tests_count': mock_tests_count,
+        'hours_studied': hours_studied,
         'subject_wise_data': subject_wise_data,
+        'mock_attempts': mock_attempts,
         'chart_labels': chart_labels_json,
         'chart_accuracy': chart_accuracy_json,
         'chart_totals': chart_totals_json
     }
     return render(request, 'profile.html', context)
+
+
+@login_required
+def live_exams_list_view(request):
+    mock_tests = MockTest.objects.all().order_by('name')
+    # Fetch high scores for each test for the current user
+    user_attempts = MockTestAttempt.objects.filter(user=request.user)
+    
+    test_list_data = []
+    for test in mock_tests:
+        test_attempts = user_attempts.filter(mock_test=test)
+        high_score = None
+        has_attempted = test_attempts.exists()
+        if has_attempted:
+            high_score = max([att.score for att in test_attempts])
+            
+        test_list_data.append({
+            'test': test,
+            'has_attempted': has_attempted,
+            'high_score': high_score,
+            'attempts_count': test_attempts.count()
+        })
+        
+    return render(request, 'live_exams_list.html', {'mock_tests': test_list_data})
+
+
+@login_required
+def live_exam_session_view(request, test_id):
+    try:
+        mock_test = MockTest.objects.get(pk=test_id)
+    except MockTest.DoesNotExist:
+        messages.error(request, "Mock Test not found.")
+        return redirect('live_exams')
+        
+    questions = mock_test.questions.all().order_by('id')
+    if not questions.exists():
+        messages.warning(request, "This mock test does not contain questions yet.")
+        return redirect('live_exams')
+        
+    # Render full screen layout (hide standard sidebar)
+    context = {
+        'mock_test': mock_test,
+        'questions': questions,
+        'hide_sidebar': True
+    }
+    return render(request, 'live_exam.html', context)
 
 
 # --- DRF API VIEWS ---
@@ -321,3 +409,64 @@ class MCQAttemptView(APIView):
             }, status=status.HTTP_200_OK)
             
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class SubmitLiveExamAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+    
+    def post(self, request):
+        test_id = request.data.get('mock_test_id')
+        answers = request.data.get('answers', {})
+        
+        try:
+            mock_test = MockTest.objects.get(pk=test_id)
+        except MockTest.DoesNotExist:
+            return Response(
+                {"error": "Mock Test not found."},
+                status=status.HTTP_404_NOT_FOUND
+            )
+            
+        total_correct = 0
+        total_wrong = 0
+        total_questions = mock_test.questions.count()
+        
+        for question in mock_test.questions.all():
+            q_id_str = str(question.id)
+            if q_id_str in answers:
+                selected = answers[q_id_str]
+                is_correct = (question.correct_answer == selected)
+                if is_correct:
+                    total_correct += 1
+                else:
+                    total_wrong += 1
+                
+                # Also log to standard UserPerformance
+                UserPerformance.objects.create(
+                    user=request.user,
+                    question=question,
+                    is_correct=is_correct
+                )
+                
+        # Score calculation: +2.0 for correct, -0.66 penalty for wrong
+        score = (total_correct * 2.0) - (total_wrong * 0.66)
+        score = round(score, 2)
+        
+        # Save MockTestAttempt record
+        attempt = MockTestAttempt.objects.create(
+            user=request.user,
+            mock_test=mock_test,
+            score=score,
+            total_correct=total_correct,
+            total_wrong=total_wrong
+        )
+        
+        return Response({
+            "attempt_id": attempt.id,
+            "score": score,
+            "total_correct": total_correct,
+            "total_wrong": total_wrong,
+            "total_unanswered": total_questions - (total_correct + total_wrong),
+            "total_questions": total_questions,
+            "accuracy": round((total_correct / (total_correct + total_wrong) * 100), 2) if (total_correct + total_wrong) > 0 else 0
+        }, status=status.HTTP_200_OK)
+

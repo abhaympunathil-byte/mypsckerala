@@ -1,124 +1,161 @@
-{% extends "base.html" %}
+{% extends "app_base.html" %}
 
-{% block title %}My Profile & Analytics - My PSC Kerala{% endblock %}
+{% block title %}Performance Overview - My PSC Kerala{% endblock %}
+
+{% block side_profile %}active{% endblock %}
+{% block nav_analytics %}active{% endblock %}
+{% block mobile_nav_profile %}active{% endblock %}
 
 {% block extra_head %}
 <!-- Chart.js CDN -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 {% endblock %}
 
-{% block content %}
-<div class="container animate-fade-in-up">
-    <!-- Profile Hero Card -->
-    <div class="glass-card p-4 p-md-5 mb-5 text-white border-0">
-        <div class="row align-items-center">
-            <div class="col-md-auto text-center text-md-start mb-3 mb-md-0">
-                <div class="d-inline-flex align-items-center justify-content-center bg-primary rounded-circle text-white fw-bold fs-1 shadow-lg" style="width: 100px; height: 100px; background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%) !important;">
-                    {{ user.full_name|slice:":1"|upper }}
-                </div>
-            </div>
-            <div class="col-md text-center text-md-start">
-                <h1 class="text-white mb-1">{{ user.full_name }}</h1>
-                <p class="text-muted mb-0"><i class="fa-regular fa-envelope me-1"></i> {{ user.email }}</p>
-                <p class="text-muted small mb-0"><i class="fa-regular fa-calendar-days me-1"></i> Joined: {{ user.date_joined|date:"d M Y" }}</p>
-            </div>
-            <div class="col-md-auto text-center text-md-end mt-3 mt-md-0">
-                <span class="badge bg-primary bg-opacity-20 text-primary px-3 py-2 fs-6">
-                    <i class="fa-solid fa-graduation-cap me-1"></i> Practice Account
-                </span>
-            </div>
+{% block app_content %}
+<div class="animate-fade-in-up">
+    <!-- Header Section -->
+    <div class="d-flex justify-content-between align-items-center mb-4 mb-md-5 border-bottom border-light pb-3 pb-md-4">
+        <div>
+            <h1 class="text-dark mb-1 fs-3 fs-md-1">Performance Dashboard</h1>
+            <p class="text-muted mb-0 small">Track your academic growth and identify areas for improvement.</p>
         </div>
+        <a href="{% url 'live_exams' %}" class="btn btn-green">
+            <i class="fa-solid fa-laptop-code me-2"></i> Start Mock Test
+        </a>
     </div>
 
-    <!-- Stats Counter row -->
+    <!-- Stats Counters row -->
     <div class="row g-4 mb-5">
-        <div class="col-md-4">
-            <div class="glass-card p-4 text-center text-white border-0 h-100">
-                <div class="p-3 d-inline-flex bg-primary bg-opacity-10 text-primary rounded-circle mb-3">
-                    <i class="fa-solid fa-list-check fa-2x"></i>
+        <div class="col-6 col-md-3">
+            <div class="analytics-widget">
+                <div class="analytics-widget-icon">
+                    <i class="fa-solid fa-list-check"></i>
                 </div>
-                <h4 class="text-muted small uppercase fw-bold mb-1">Attempted MCQs</h4>
-                <h2 class="fw-bold mb-0 text-white">{{ total_attempted }}</h2>
+                <div>
+                    <div class="analytics-widget-val">{{ total_attempted }}</div>
+                    <div class="analytics-widget-lbl">Total Attempts</div>
+                </div>
             </div>
         </div>
-        <div class="col-md-4">
-            <div class="glass-card p-4 text-center text-white border-0 h-100">
-                <div class="p-3 d-inline-flex bg-success bg-opacity-10 text-success rounded-circle mb-3">
-                    <i class="fa-solid fa-circle-check fa-2x"></i>
+        <div class="col-6 col-md-3">
+            <div class="analytics-widget">
+                <div class="analytics-widget-icon" style="background-color: #ecfdf5; color: var(--success-color);">
+                    <i class="fa-solid fa-gauge-simple-high"></i>
                 </div>
-                <h4 class="text-muted small uppercase fw-bold mb-1">Correct Answers</h4>
-                <h2 class="fw-bold mb-0 text-success">{{ correct_attempts }}</h2>
+                <div>
+                    <div class="analytics-widget-val text-success">{{ accuracy }}%</div>
+                    <div class="analytics-widget-lbl">Overall Accuracy</div>
+                </div>
             </div>
         </div>
-        <div class="col-md-4">
-            <div class="glass-card p-4 text-center text-white border-0 h-100">
-                <div class="p-3 d-inline-flex bg-warning bg-opacity-10 text-warning rounded-circle mb-3">
-                    <i class="fa-solid fa-gauge-simple-high fa-2x"></i>
+        <div class="col-6 col-md-3">
+            <div class="analytics-widget">
+                <div class="analytics-widget-icon" style="background-color: #fef2f2; color: var(--danger-color);">
+                    <i class="fa-solid fa-laptop"></i>
                 </div>
-                <h4 class="text-muted small uppercase fw-bold mb-1">Overall Accuracy</h4>
-                <h2 class="fw-bold mb-0 text-warning">{{ accuracy }}%</h2>
+                <div>
+                    <div class="analytics-widget-val">{{ mock_tests_count }}</div>
+                    <div class="analytics-widget-lbl">Mock Tests</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="analytics-widget">
+                <div class="analytics-widget-icon" style="background-color: #fef3c7; color: var(--warning-color);">
+                    <i class="fa-regular fa-clock"></i>
+                </div>
+                <div>
+                    <div class="analytics-widget-val">{{ hours_studied }}</div>
+                    <div class="analytics-widget-lbl">Hours Studied</div>
+                </div>
             </div>
         </div>
     </div>
 
-    <!-- Analytics Dashboard Panels -->
     {% if total_attempted > 0 %}
         <div class="row g-4 mb-5">
-            <!-- Left Side: Table breakdown -->
-            <div class="col-lg-6">
-                <div class="glass-card p-4 text-white border-0 h-100">
-                    <h3 class="text-white mb-4"><i class="fa-solid fa-chart-simple text-primary me-2"></i> Subject-Wise Practice</h3>
-                    <div class="table-responsive">
-                        <table class="table table-dark table-hover border-secondary border-opacity-10 mb-0 align-middle">
-                            <thead>
-                                <tr class="text-muted" style="border-bottom: 2px solid rgba(255,255,255,0.1);">
-                                    <th scope="col" style="background: transparent;">Subject</th>
-                                    <th scope="col" class="text-center" style="background: transparent;">Attempts</th>
-                                    <th scope="col" class="text-center" style="background: transparent;">Correct</th>
-                                    <th scope="col" class="text-end" style="background: transparent;">Accuracy</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for item in subject_wise_data %}
-                                    <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
-                                        <td class="fw-semibold text-white" style="background: transparent;">{{ item.subject }}</td>
-                                        <td class="text-center text-muted" style="background: transparent;">{{ item.total }}</td>
-                                        <td class="text-center text-success" style="background: transparent;">{{ item.correct }}</td>
-                                        <td class="text-end" style="background: transparent;">
-                                            <span class="fw-bold {% if item.accuracy >= 70 %}text-success{% elif item.accuracy >= 40 %}text-warning{% else %}text-danger{% endif %}">
-                                                {{ item.accuracy }}%
-                                            </span>
-                                            <div class="progress bg-secondary bg-opacity-20 mt-1 ms-auto" style="height: 4px; width: 60px;">
-                                                <div class="progress-bar {% if item.accuracy >= 70 %}bg-success{% elif item.accuracy >= 40 %}bg-warning{% else %}bg-danger{% endif %}" role="progressbar" style="width: {{ item.accuracy }}%;"></div>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Right Side: Chart.js Graphs -->
-            <div class="col-lg-6">
-                <div class="glass-card p-4 text-white border-0 h-100">
-                    <h3 class="text-white mb-4"><i class="fa-solid fa-chart-pie text-success me-2"></i> Strengths & Weaknesses</h3>
-                    <div style="position: relative; height: 350px; width: 100%;">
+            <!-- Left Panel: Subject Progress Chart -->
+            <div class="col-lg-7">
+                <div class="card premium-card p-4 border-0 bg-white shadow-sm h-100">
+                    <h4 class="text-dark mb-4"><i class="fa-solid fa-chart-bar text-success me-2"></i> Subject Practice Breakdown</h4>
+                    <div style="position: relative; height: 320px; width: 100%;">
                         <canvas id="accuracyChart"></canvas>
                     </div>
                 </div>
             </div>
+
+            <!-- Right Panel: Subject Performance Timeline progress bars -->
+            <div class="col-lg-5">
+                <div class="card premium-card p-4 border-0 bg-white shadow-sm h-100">
+                    <h4 class="text-dark mb-4"><i class="fa-solid fa-bullseye text-success me-2"></i> Subject Performance Timeline</h4>
+                    <div class="mb-4">
+                        {% for item in subject_wise_data %}
+                            <div class="timeline-bar-container">
+                                <div class="timeline-bar-lbl text-dark">
+                                    <span>{{ item.subject }}</span>
+                                    <span class="{% if item.accuracy >= 70 %}text-success{% elif item.accuracy >= 40 %}text-warning{% else %}text-danger{% endif %}">{{ item.accuracy }}%</span>
+                                </div>
+                                <div class="timeline-progress">
+                                    <div class="timeline-progress-bar {% if item.accuracy >= 70 %}bg-success{% elif item.accuracy >= 40 %}bg-warning{% else %}bg-danger{% endif %}" style="width: {{ item.accuracy }}%;"></div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+
+                    <!-- Analysis Insights widget -->
+                    <div class="p-3 rounded bg-light border border-light mt-auto">
+                        <h6 class="text-dark mb-2 fw-bold"><i class="fa-solid fa-lightbulb text-warning me-1"></i> Analysis Insights</h6>
+                        <ul class="mb-0 ps-3 small text-muted lh-base">
+                            <li>Your strongest performance is in subjects with <strong>&gt;70% Accuracy</strong>.</li>
+                            <li>Practice Mock Tests regularly to build speed and reduce negative penalty marks.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
         </div>
+
+        <!-- Mock Exam Attempts Logs -->
+        {% if mock_attempts.exists %}
+            <div class="card premium-card p-4 border-0 bg-white shadow-sm mb-5 animate-fade-in-up">
+                <h4 class="text-dark mb-4"><i class="fa-solid fa-clock-rotate-left text-success me-2"></i> Mock Exam Attempts Logs</h4>
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead>
+                            <tr class="text-muted small fw-bold">
+                                <th>Exam Module Name</th>
+                                <th class="text-center">Correct</th>
+                                <th class="text-center">Wrong</th>
+                                <th class="text-end">Final Score</th>
+                                <th class="text-end">Attempted Date</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for attempt in mock_attempts %}
+                                <tr>
+                                    <td class="fw-bold text-dark">{{ attempt.mock_test.name }}</td>
+                                    <td class="text-center text-success"><i class="fa-solid fa-circle-check"></i> {{ attempt.total_correct }}</td>
+                                    <td class="text-center text-danger"><i class="fa-solid fa-circle-xmark"></i> {{ attempt.total_wrong }}</td>
+                                    <td class="text-end fw-bold text-success">{{ attempt.score }} Pts</td>
+                                    <td class="text-end text-muted small">{{ attempt.attempted_date|date:"d M Y, h:i A" }}</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        {% endif %}
+
     {% else %}
         <!-- Empty State -->
-        <div class="glass-card text-center p-5 text-muted mb-5">
-            <i class="fa-solid fa-chart-column fa-5x mb-4 text-secondary"></i>
-            <h2>No Practice Data Available</h2>
-            <p class="fs-5 mb-4">Practice some MCQs to generate statistical dashboards showing your strengths and weaknesses.</p>
-            <a href="{% url 'dashboard' %}" class="btn btn-premium px-5 py-3">
-                <i class="fa-solid fa-circle-play me-1"></i> Start Practicing Now
-            </a>
+        <div class="card premium-card text-center p-5 text-muted border-0 bg-white shadow-md">
+            <div class="card-body">
+                <i class="fa-solid fa-chart-column fa-5x mb-4 text-secondary"></i>
+                <h2>Practice Logs Empty</h2>
+                <p class="fs-5 mb-4">Complete practice modules or start mock exams to generate analytical dashboards.</p>
+                <a href="{% url 'dashboard' %}" class="btn btn-green px-5 py-3">
+                    <i class="fa-solid fa-circle-play me-1"></i> Start Practising
+                </a>
+            </div>
         </div>
     {% endif %}
 </div>
@@ -128,24 +165,16 @@
 {% if total_attempted > 0 %}
 <script>
     document.addEventListener("DOMContentLoaded", function () {
-        // Parse data from Django context variables
         const labels = {{ chart_labels|safe }};
         const accuracyData = {{ chart_accuracy|safe }};
         
-        // Context for the chart
         const ctx = document.getElementById('accuracyChart').getContext('2d');
         
-        // Define color palette based on performance values dynamically
-        const backgroundColors = accuracyData.map(acc => {
-            if (acc >= 70) return 'rgba(16, 185, 129, 0.7)'; // Green
-            if (acc >= 40) return 'rgba(245, 158, 11, 0.7)'; // Orange/Yellow
-            return 'rgba(239, 68, 68, 0.7)'; // Red
-        });
-        
-        const borderColors = accuracyData.map(acc => {
-            if (acc >= 70) return '#10b981';
-            if (acc >= 40) return '#f59e0b';
-            return '#ef4444';
+        // Solid green color theme for bars matching dashboard screenshots
+        const barColors = accuracyData.map(acc => {
+            if (acc >= 70) return '#006a4e'; // Forest Green
+            if (acc >= 40) return '#0d9488'; // Teal
+            return '#f43f5e'; // Rose red for low scores
         });
 
         new Chart(ctx, {
@@ -153,12 +182,12 @@
             data: {
                 labels: labels,
                 datasets: [{
-                    label: 'Accuracy Rate (%)',
+                    label: 'Accuracy %',
                     data: accuracyData,
-                    backgroundColor: backgroundColors,
-                    borderColor: borderColors,
-                    borderWidth: 1.5,
+                    backgroundColor: barColors,
+                    borderWidth: 0,
                     borderRadius: 6,
+                    barThickness: 40
                 }]
             },
             options: {
@@ -167,13 +196,6 @@
                 plugins: {
                     legend: {
                         display: false
-                    },
-                    tooltip: {
-                        callbacks: {
-                            label: function(context) {
-                                return `Accuracy: ${context.raw}%`;
-                            }
-                        }
                     }
                 },
                 scales: {
@@ -181,10 +203,10 @@
                         beginAtZero: true,
                         max: 100,
                         grid: {
-                            color: 'rgba(255, 255, 255, 0.05)'
+                            color: '#f1f5f9'
                         },
                         ticks: {
-                            color: '#94a3b8',
+                            color: '#64748b',
                             callback: function(value) {
                                 return value + "%";
                             }
@@ -195,9 +217,10 @@
                             display: false
                         },
                         ticks: {
-                            color: '#94a3b8',
+                            color: '#475569',
                             font: {
-                                size: 12
+                                size: 12,
+                                weight: '600'
                             }
                         }
                     }
