@@ -76,6 +76,10 @@ DATABASES = {
     }
 }
 
+# If DATABASE_URL is provided (e.g. on Render/Heroku), it will override the above default
+if 'DATABASE_URL' in os.environ:
+    DATABASES['default'] = env.db('DATABASE_URL')
+
 # Custom Authentication System
 AUTH_USER_MODEL = 'my_psc_kerala.PSCUser'
 
