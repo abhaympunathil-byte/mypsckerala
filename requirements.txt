@@ -5,3 +5,5 @@ django-environ
 pandas
 openpyxl
 gunicorn
+whitenoise[brotli]
+requests

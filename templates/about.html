@@ -28,20 +28,39 @@
                     <li><strong>Community Contributions:</strong> A platform for users to share their own study materials and question papers.</li>
                 </ul>
 
-                <h3 class="text-dark mb-4">Get in Touch</h3>
-                <p class="text-muted lh-lg mb-4">
-                    Have questions, suggestions, or need help? We'd love to hear from you. 
-                    <br>
-                    <i class="fa-solid fa-envelope text-success me-2 mt-3"></i> 
-                    <strong>Email us at:</strong> <a href="mailto:mypsc26@gmail.com" class="text-decoration-none text-success fw-bold">mypsc26@gmail.com</a>
-                </p>
-                
                 <div class="text-center mt-5">
                     {% if not user.is_authenticated %}
                         <a href="{% url 'register' %}" class="btn btn-green btn-lg px-5">Join Us Today</a>
                     {% else %}
                         <a href="{% url 'dashboard' %}" class="btn btn-green btn-lg px-5">Go to Dashboard</a>
                     {% endif %}
+                </div>
+            </div>
+
+            <!-- Get In Touch Form Section -->
+            <div class="card premium-card border-0 shadow-sm mb-5" style="background-color: #c9d6ce;">
+                <div class="card-body p-4 p-md-5">
+                    <div class="text-center mb-4">
+                        <h2 class="fw-bold" style="color: #1a472a;">Get In Touch</h2>
+                        <p style="color: #4b6655;">Have a question, found a bug, or want to suggest a new feature? Drop us a transmission below.</p>
+                    </div>
+                    
+                    <form method="POST" action="{% url 'about' %}">
+                        {% csrf_token %}
+                        <div class="mb-4">
+                            <label for="name" class="form-label fw-bold small" style="color: #4b6655; letter-spacing: 1px;">NAME</label>
+                            <input type="text" class="form-control form-control-lg border-0 shadow-sm rounded-3" id="name" name="name" placeholder="Enter your name" required>
+                        </div>
+                        <div class="mb-4">
+                            <label for="email" class="form-label fw-bold small" style="color: #4b6655; letter-spacing: 1px;">EMAIL</label>
+                            <input type="email" class="form-control form-control-lg border-0 shadow-sm rounded-3" id="email" name="email" placeholder="you@example.com" required>
+                        </div>
+                        <div class="mb-5">
+                            <label for="message" class="form-label fw-bold small" style="color: #4b6655; letter-spacing: 1px;">MESSAGE</label>
+                            <textarea class="form-control form-control-lg border-0 shadow-sm rounded-3" id="message" name="message" rows="5" placeholder="Type your message here..." required></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-lg w-100 fw-bold rounded-3" style="background-color: #1a472a; color: white; padding-top: 15px; padding-bottom: 15px;">Send Message</button>
+                    </form>
                 </div>
             </div>
         </div>
