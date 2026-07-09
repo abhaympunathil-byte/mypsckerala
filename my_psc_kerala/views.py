@@ -196,6 +196,30 @@ def index_view(request):
     return render(request, 'index.html')
 
 def about_view(request):
+    if request.method == 'POST':
+        name = request.POST.get('name', '').strip()
+        email = request.POST.get('email', '').strip()
+        message = request.POST.get('message', '').strip()
+        
+        if name and email and message:
+            try:
+                subject = f"Contact Form Submission from {name}"
+                body = f"Name: {name}\nEmail: {email}\n\nMessage:\n{message}"
+                send_mail(
+                    subject,
+                    body,
+                    'mypsc26@gmail.com',  # From
+                    ['mypsc26@gmail.com'],  # To
+                    fail_silently=False,
+                )
+                messages.success(request, "Your message has been sent successfully. We'll be in touch soon!")
+            except Exception as e:
+                messages.error(request, "Sorry, an error occurred while sending your message. Please try again.")
+        else:
+            messages.error(request, "Please fill in all the fields.")
+            
+        return redirect('about')
+
     return render(request, 'about.html')
 
 @login_required
