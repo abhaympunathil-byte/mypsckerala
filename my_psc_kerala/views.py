@@ -8,6 +8,9 @@ from django.core.mail import send_mail
 from django.db.models import Count, Q
 from django.http import JsonResponse
 from django.utils import timezone
+from django.conf import settings
+from urllib.parse import urlencode
+import requests
 
 # DRF imports
 from rest_framework.views import APIView
@@ -493,4 +496,77 @@ class SubmitLiveExamAPIView(APIView):
             "total_questions": total_questions,
             "accuracy": round((total_correct / (total_correct + total_wrong) * 100), 2) if (total_correct + total_wrong) > 0 else 0
         }, status=status.HTTP_200_OK)
+
+
+# --- GOOGLE OAUTH2 VIEWS ---
+
+def google_login_view(request):
+    google_auth_url = 'https://accounts.google.com/o/oauth2/v2/auth'
+    params = {
+        'client_id': settings.GOOGLE_CLIENT_ID,
+        'response_type': 'code',
+        'redirect_uri': settings.GOOGLE_REDIRECT_URI,
+        'scope': 'openid email profile',
+        'access_type': 'offline',
+        'prompt': 'select_account',
+    }
+    url = f"{google_auth_url}?{urlencode(params)}"
+    return redirect(url)
+
+def google_callback_view(request):
+    code = request.GET.get('code')
+    if not code:
+        messages.error(request, 'Google login failed or was cancelled.')
+        return redirect('login')
+
+    # Exchange code for token
+    token_url = 'https://oauth2.googleapis.com/token'
+    data = {
+        'code': code,
+        'client_id': settings.GOOGLE_CLIENT_ID,
+        'client_secret': settings.GOOGLE_CLIENT_SECRET,
+        'redirect_uri': settings.GOOGLE_REDIRECT_URI,
+        'grant_type': 'authorization_code',
+    }
+    
+    try:
+        token_response = requests.post(token_url, data=data)
+        token_response.raise_for_status()
+        tokens = token_response.json()
+        access_token = tokens.get('access_token')
+
+        # Get user info
+        user_info_url = 'https://www.googleapis.com/oauth2/v2/userinfo'
+        headers = {'Authorization': f'Bearer {access_token}'}
+        user_info_response = requests.get(user_info_url, headers=headers)
+        user_info_response.raise_for_status()
+        user_info = user_info_response.json()
+
+        email = user_info.get('email')
+        full_name = user_info.get('name', 'Google User')
+
+        if not email:
+            messages.error(request, 'Could not retrieve email from Google.')
+            return redirect('login')
+
+        # Find or create user
+        user, created = PSCUser.objects.get_or_create(email=email, defaults={
+            'full_name': full_name,
+            'is_active': True,
+        })
+        
+        if created:
+            user.set_unusable_password()
+            user.save()
+        elif not user.is_active:
+            user.is_active = True
+            user.save()
+
+        # Log the user in
+        login(request, user, backend='django.contrib.auth.backends.ModelBackend')
+        return redirect('dashboard')
+        
+    except requests.exceptions.RequestException as e:
+        messages.error(request, 'Failed to authenticate with Google. Please try again.')
+        return redirect('login')
 

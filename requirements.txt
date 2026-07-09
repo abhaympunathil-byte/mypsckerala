@@ -6,3 +6,4 @@ pandas
 openpyxl
 gunicorn
 whitenoise[brotli]
+requests

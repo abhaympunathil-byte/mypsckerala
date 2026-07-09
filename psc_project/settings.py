@@ -137,3 +137,8 @@ DEFAULT_FROM_EMAIL = env('DEFAULT_FROM_EMAIL', default='My PSC Kerala <mypsc26@g
 
 # Default primary key field type
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# Google OAuth2 Settings
+GOOGLE_CLIENT_ID = env('GOOGLE_CLIENT_ID', default='')
+GOOGLE_CLIENT_SECRET = env('GOOGLE_CLIENT_SECRET', default='')
+GOOGLE_REDIRECT_URI = env('GOOGLE_REDIRECT_URI', default='http://127.0.0.1:8000/auth/google/callback/')
