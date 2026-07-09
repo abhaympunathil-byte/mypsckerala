@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -12,33 +13,41 @@
     <link href="/static/css/style.css" rel="stylesheet">
     {% block extra_head %}{% endblock %}
 </head>
+
 <body class="d-flex flex-column min-vh-100 {% block body_class %}{% endblock %}">
 
     <!-- Premium Navbar -->
     <nav class="navbar navbar-expand-lg navbar-light navbar-academic sticky-top py-3">
         <div class="container">
             <a class="navbar-brand d-flex align-items-center" href="/">
-                <img src="/static/images/logo.jpg" alt="My PSC Kerala Logo" width="40" height="40" class="me-2 rounded-circle border border-success" style="object-fit: cover;">
-                <span class="brand-name fs-4 text-dark">Aspirant <span class="text-success">Kerala</span></span>
+                <img src="/static/images/logo.jpg" alt="My PSC Kerala Logo" width="40" height="40"
+                    class="me-2 rounded-circle border border-success" style="object-fit: cover;">
+                <span class="brand-name fs-4 text-dark">My PSC <span class="text-success">Kerala</span></span>
             </a>
-            <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent" aria-controls="navbarContent" aria-expanded="false" aria-label="Toggle navigation">
+            <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse"
+                data-bs-target="#navbarContent" aria-controls="navbarContent" aria-expanded="false"
+                aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarContent">
                 <ul class="navbar-nav me-auto ms-lg-4 mb-2 mb-lg-0 align-items-center">
                     {% if user.is_authenticated %}
-                        <li class="nav-item">
-                            <a class="nav-link {% block nav_modules %}{% endblock %}" href="{% url 'dashboard' %}">Modules</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link {% block nav_live %}{% endblock %}" href="{% url 'live_exams' %}">Live Exams</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link {% block nav_analytics %}{% endblock %}" href="{% url 'profile' %}">Analytics</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="#" onclick="alert('Previous Papers modules will be available shortly!')">Previous Papers</a>
-                        </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% block nav_modules %}{% endblock %}"
+                            href="{% url 'dashboard' %}">Modules</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% block nav_live %}{% endblock %}" href="{% url 'live_exams' %}">Live
+                            Exams</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% block nav_analytics %}{% endblock %}"
+                            href="{% url 'profile' %}">Analytics</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#"
+                            onclick="alert('Previous Papers modules will be available shortly!')">Previous Papers</a>
+                    </li>
                     {% endif %}
                     <li class="nav-item">
                         <a class="nav-link {% block nav_about %}{% endblock %}" href="{% url 'about' %}">About Us</a>
@@ -46,21 +55,22 @@
                 </ul>
                 <ul class="navbar-nav ms-auto mb-2 mb-lg-0 align-items-center">
                     {% if user.is_authenticated %}
-                        <li class="nav-item me-3">
-                            <span class="text-muted small fw-medium">Logged in as <strong class="text-dark">{{ user.full_name }}</strong></span>
-                        </li>
-                        <li class="nav-item">
-                            <a class="btn btn-green-outline btn-sm px-3 py-2" href="{% url 'logout' %}">
-                                <i class="fa-solid fa-right-from-bracket me-1"></i> Logout
-                            </a>
-                        </li>
+                    <li class="nav-item me-3">
+                        <span class="text-muted small fw-medium">Logged in as <strong class="text-dark">{{
+                                user.full_name }}</strong></span>
+                    </li>
+                    <li class="nav-item">
+                        <a class="btn btn-green-outline btn-sm px-3 py-2" href="{% url 'logout' %}">
+                            <i class="fa-solid fa-right-from-bracket me-1"></i> Logout
+                        </a>
+                    </li>
                     {% else %}
-                        <li class="nav-item me-3">
-                            <a class="nav-link text-dark fw-semibold" href="{% url 'login' %}">Login</a>
-                        </li>
-                        <li class="nav-item me-3">
-                            <a class="btn btn-green btn-sm px-4 py-2" href="{% url 'register' %}">Start Free Trial</a>
-                        </li>
+                    <li class="nav-item me-3">
+                        <a class="nav-link text-dark fw-semibold" href="{% url 'login' %}">Login</a>
+                    </li>
+                    <li class="nav-item me-3">
+                        <a class="btn btn-green btn-sm px-4 py-2" href="{% url 'register' %}">Start Free Trial</a>
+                    </li>
                     {% endif %}
                     <li class="nav-item ms-3">
                         <a class="btn btn-outline-warning btn-sm" href="{% url 'admin:index' %}" target="_blank">
@@ -75,23 +85,24 @@
     <!-- Messaging Alerts Section -->
     <div class="container mt-3 mb-1">
         {% if messages %}
-            {% for message in messages %}
-                <div class="alert alert-{% if message.tags == 'error' %}danger{% elif message.tags == 'warning' %}warning{% elif message.tags == 'success' %}success{% else %}info{% endif %} alert-dismissible fade show border-0 shadow-sm animate-fade-in-up" role="alert">
-                    <div class="d-flex align-items-center">
-                        {% if message.tags == 'error' %}
-                            <i class="fa-solid fa-circle-xmark me-2 text-danger fs-5"></i>
-                        {% elif message.tags == 'success' %}
-                            <i class="fa-solid fa-circle-check me-2 text-success fs-5"></i>
-                        {% elif message.tags == 'warning' %}
-                            <i class="fa-solid fa-triangle-exclamation me-2 text-warning fs-5"></i>
-                        {% else %}
-                            <i class="fa-solid fa-circle-info me-2 text-primary fs-5"></i>
-                        {% endif %}
-                        <span class="text-dark">{{ message }}</span>
-                    </div>
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                </div>
-            {% endfor %}
+        {% for message in messages %}
+        <div class="alert alert-{% if message.tags == 'error' %}danger{% elif message.tags == 'warning' %}warning{% elif message.tags == 'success' %}success{% else %}info{% endif %} alert-dismissible fade show border-0 shadow-sm animate-fade-in-up"
+            role="alert">
+            <div class="d-flex align-items-center">
+                {% if message.tags == 'error' %}
+                <i class="fa-solid fa-circle-xmark me-2 text-danger fs-5"></i>
+                {% elif message.tags == 'success' %}
+                <i class="fa-solid fa-circle-check me-2 text-success fs-5"></i>
+                {% elif message.tags == 'warning' %}
+                <i class="fa-solid fa-triangle-exclamation me-2 text-warning fs-5"></i>
+                {% else %}
+                <i class="fa-solid fa-circle-info me-2 text-primary fs-5"></i>
+                {% endif %}
+                <span class="text-dark">{{ message }}</span>
+            </div>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        {% endfor %}
         {% endif %}
     </div>
 
@@ -114,4 +125,5 @@
     <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
     {% block extra_js %}{% endblock %}
 </body>
+
 </html>
