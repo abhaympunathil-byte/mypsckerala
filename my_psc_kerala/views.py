@@ -20,7 +20,7 @@ from rest_framework import status
 
 from my_psc_kerala.models import (
     PSCUser, OTPVerification, ClassLevel, Subject, StudyNote, Question, UserPerformance,
-    MockTest, MockTestAttempt, UserUpload
+    MockTest, MockTestAttempt, UserUpload, PreviousPaper
 )
 from my_psc_kerala.serializers import MCQAttemptSerializer
 
@@ -505,4 +505,22 @@ def google_callback_view(request):
     except requests.exceptions.RequestException as e:
         messages.error(request, 'Failed to authenticate with Google. Please try again.')
         return redirect('login')
+
+
+@login_required
+def previous_papers_view(request):
+    papers = PreviousPaper.objects.all()
+    
+    # Filter by search term if provided
+    search_query = request.GET.get('q', '')
+    if search_query:
+        papers = papers.filter(
+            Q(title__icontains=search_query) | 
+            Q(exam_name__icontains=search_query)
+        )
+        
+    return render(request, 'previous_papers.html', {
+        'papers': papers,
+        'search_query': search_query
+    })
 

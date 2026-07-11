@@ -6,7 +6,7 @@ from django.contrib import messages
 from django.db.models import Count
 from my_psc_kerala.models import (
     PSCUser, ClassLevel, Subject, StudyNote, Question, UserPerformance, OTPVerification,
-    MockTest, MockTestAttempt, UserUpload
+    MockTest, MockTestAttempt, UserUpload, PreviousPaper
 )
 from my_psc_kerala.import_utils import import_data_from_file
 
@@ -123,7 +123,15 @@ class MockTestAttemptAdmin(admin.ModelAdmin):
 
 @admin.register(UserUpload, site=admin_site)
 class UserUploadAdmin(admin.ModelAdmin):
-    list_display = ['title', 'upload_type', 'user', 'uploaded_at', 'is_approved']
-    list_filter = ['upload_type', 'is_approved', 'uploaded_at']
-    search_fields = ['title', 'user__email', 'user__full_name']
-    list_editable = ['is_approved']
+    list_display = ('title', 'user', 'upload_type', 'is_approved', 'uploaded_at')
+    list_filter = ('upload_type', 'is_approved', 'uploaded_at')
+    search_fields = ('title', 'user__email', 'user__full_name')
+    list_editable = ('is_approved',)
+    date_hierarchy = 'uploaded_at'
+
+@admin.register(PreviousPaper, site=admin_site)
+class PreviousPaperAdmin(admin.ModelAdmin):
+    list_display = ('title', 'exam_name', 'year', 'uploaded_at')
+    list_filter = ('exam_name', 'year')
+    search_fields = ('title', 'exam_name')
+    date_hierarchy = 'uploaded_at'

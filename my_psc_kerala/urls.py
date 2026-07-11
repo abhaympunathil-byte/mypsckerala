@@ -19,6 +19,7 @@ urlpatterns = [
     path('class/<int:class_id>/', views.subjects_view, name='subjects'),
     path('subject/<int:subject_id>/', views.exam_view, name='exam'),
     path('profile/', views.profile_view, name='profile'),
+    path('previous-papers/', views.previous_papers_view, name='previous_papers'),
     
     # Live Mock Exams paths
     path('live-exams/', views.live_exams_list_view, name='live_exams'),
