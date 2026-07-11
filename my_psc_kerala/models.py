@@ -142,3 +142,16 @@ class UserUpload(models.Model):
 
     def __str__(self):
         return f"{self.title} by {self.user.full_name}"
+
+class PreviousPaper(models.Model):
+    title = models.CharField(max_length=255, help_text="e.g., KAS Prelims 2020")
+    exam_name = models.CharField(max_length=255, help_text="e.g., Kerala Administrative Service")
+    year = models.IntegerField(null=True, blank=True)
+    pdf_file = models.FileField(upload_to='previous_papers/')
+    uploaded_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-year', '-uploaded_at']
+
+    def __str__(self):
+        return f"{self.title} ({self.year})" if self.year else self.title
