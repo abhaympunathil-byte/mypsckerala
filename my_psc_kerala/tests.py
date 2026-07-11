@@ -49,51 +49,38 @@ class MyPSCKeralaTests(TestCase):
         self.assertFalse(user.is_active)
         self.assertFalse(user.is_staff)
 
-    def test_registration_flow_otp_sent(self):
-        """Test that registering creates inactive user and generates/sends an OTP"""
+    def test_registration_flow_success(self):
+        """Test that registering creates an active user and logs them in"""
         url = reverse('register')
         data = {
             'full_name': self.full_name,
             'email': self.email,
-            'password': self.password
+            'password': self.password,
+            'confirm_password': self.password
         }
         response = self.client.post(url, data)
-        self.assertEqual(response.status_code, 302) # Redirect to verify_otp
+        self.assertEqual(response.status_code, 302) # Redirect to dashboard
+        self.assertEqual(response.url, reverse('dashboard'))
         
-        # Check user created but inactive
-        user = PSCUser.objects.get(email=self.email)
-        self.assertFalse(user.is_active)
-        
-        # Check OTP created
-        otp_entry = OTPVerification.objects.filter(email=self.email).first()
-        self.assertIsNotNone(otp_entry)
-        self.assertEqual(len(otp_entry.otp_code), 6)
-        self.assertFalse(otp_entry.is_verified)
-
-    def test_otp_verification_flow(self):
-        """Test OTP verification activates the user and logs them in"""
-        # Step 1: Trigger register to create OTP
-        self.client.post(reverse('register'), {
-            'full_name': self.full_name,
-            'email': self.email,
-            'password': self.password
-        })
-        
-        otp_entry = OTPVerification.objects.get(email=self.email)
-        
-        # Step 2: POST correct OTP code
-        session = self.client.session
-        session['verify_email'] = self.email
-        session.save()
-        
-        response = self.client.post(reverse('verify_otp'), {
-            'otp_code': otp_entry.otp_code
-        })
-        self.assertEqual(response.status_code, 302) # Redirects to dashboard
-        
-        # Verify user is now active
+        # Check user created and active
         user = PSCUser.objects.get(email=self.email)
         self.assertTrue(user.is_active)
+
+    def test_registration_password_mismatch(self):
+        """Test registration fails when passwords do not match"""
+        url = reverse('register')
+        data = {
+            'full_name': self.full_name,
+            'email': self.email,
+            'password': self.password,
+            'confirm_password': 'wrongpassword'
+        }
+        response = self.client.post(url, data)
+        self.assertEqual(response.status_code, 200) # Renders register page with error
+        
+        # Check user not created
+        with self.assertRaises(PSCUser.DoesNotExist):
+            PSCUser.objects.get(email=self.email)
 
     def test_mcq_attempt_api(self):
         """Test the DRF API for evaluating attempts works for authenticated users"""
