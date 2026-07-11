@@ -35,9 +35,14 @@ def register_view(request):
         full_name = request.POST.get('full_name', '').strip()
         email = request.POST.get('email', '').strip().lower()
         password = request.POST.get('password', '')
+        confirm_password = request.POST.get('confirm_password', '')
         
-        if not full_name or not email or not password:
+        if not full_name or not email or not password or not confirm_password:
             messages.error(request, "All fields are required.")
+            return render(request, 'register.html')
+            
+        if password != confirm_password:
+            messages.error(request, "Passwords do not match.")
             return render(request, 'register.html')
             
         try:
@@ -45,102 +50,33 @@ def register_view(request):
             user = PSCUser.objects.filter(email=email).first()
             if user:
                 if user.is_active:
-                    messages.error(request, "This email is already registered and active. Please log in.")
+                    messages.error(request, "This email is already registered. Please log in.")
                     return redirect('login')
                 else:
-                    # Update details for inactive user and send new OTP
+                    # Update details for inactive user and activate
                     user.full_name = full_name
                     user.set_password(password)
+                    user.is_active = True
                     user.save()
             else:
-                # Create inactive user
+                # Create active user
                 user = PSCUser.objects.create_user(
                     email=email,
                     full_name=full_name,
                     password=password,
-                    is_active=False
+                    is_active=True
                 )
             
-            # Generate 6-digit OTP
-            otp = f"{random.randint(100000, 999999)}"
+            # Log the user in
+            login(request, user, backend='my_psc_kerala.auth_backends.EmailAuthBackend')
             
-            # Save or update OTP
-            otp_obj, created = OTPVerification.objects.update_or_create(
-                email=email,
-                defaults={'otp_code': otp, 'is_verified': False, 'created_at': timezone.now()}
-            )
-            
-            # Send Email (console by default)
-            send_mail(
-                'Verify Your Account - My PSC Kerala',
-                f'Hello {full_name},\n\nYour OTP for verifying your My PSC Kerala account is: {otp}\n\nThis OTP is valid for 10 minutes.',
-                'noreply@mypsckerala.com',
-                [email],
-                fail_silently=False,
-            )
-            
-            # Store email in session to verify
-            request.session['verify_email'] = email
-            messages.success(request, "An OTP has been sent to your email. Please verify.")
-            return redirect('verify_otp')
+            messages.success(request, f"Welcome {user.full_name}! Your account has been created successfully.")
+            return redirect('dashboard')
             
         except Exception as e:
             messages.error(request, f"An error occurred: {str(e)}")
             
     return render(request, 'register.html')
-
-
-def verify_otp_view(request):
-    email = request.session.get('verify_email')
-    if not email:
-        messages.error(request, "No email session found. Please register first.")
-        return redirect('register')
-        
-    if request.method == 'POST':
-        otp_code = request.POST.get('otp_code', '').strip()
-        
-        if not otp_code:
-            messages.error(request, "Please enter the OTP.")
-            return render(request, 'verify_otp.html', {'email': email})
-            
-        # Get latest OTP verification record
-        otp_record = OTPVerification.objects.filter(email=email, is_verified=False).order_by('-created_at').first()
-        
-        if not otp_record:
-            messages.error(request, "No OTP record found. Please register again.")
-            return redirect('register')
-            
-        if otp_record.is_expired():
-            messages.error(request, "OTP has expired. Please register/request a new one.")
-            return render(request, 'verify_otp.html', {'email': email})
-            
-        if otp_record.otp_code == otp_code:
-            # Mark OTP as verified
-            otp_record.is_verified = True
-            otp_record.save()
-            
-            # Activate user
-            try:
-                user = PSCUser.objects.get(email=email)
-                user.is_active = True
-                user.save()
-                
-                # Log the user in
-                # Specify authentication backend explicitly
-                login(request, user, backend='my_psc_kerala.auth_backends.EmailAuthBackend')
-                
-                # Clear session
-                del request.session['verify_email']
-                
-                messages.success(request, f"Welcome {user.full_name}! Your account has been verified successfully.")
-                return redirect('dashboard')
-            except PSCUser.DoesNotExist:
-                messages.error(request, "User account not found. Please register again.")
-                return redirect('register')
-        else:
-            messages.error(request, "Invalid OTP. Please try again.")
-            
-    return render(request, 'verify_otp.html', {'email': email})
 
 
 def login_view(request):

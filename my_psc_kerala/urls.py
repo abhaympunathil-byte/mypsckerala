@@ -4,7 +4,6 @@ from my_psc_kerala import views
 urlpatterns = [
     # Auth paths
     path('register/', views.register_view, name='register'),
-    path('verify-otp/', views.verify_otp_view, name='verify_otp'),
     path('login/', views.login_view, name='login'),
     path('logout/', views.logout_view, name='logout'),
     
