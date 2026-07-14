@@ -31,20 +31,33 @@
         <div class="col-lg-8">
             <h3 class="text-dark mb-4"><i class="fa-solid fa-circle-play text-success me-2"></i> Practice Quiz Modules</h3>
             <div class="row row-cols-1 row-cols-md-2 g-4">
-                {% for sub in subjects %}
+                {% for item in subject_data_list %}
                     <div class="col">
                         <div class="card h-100 premium-card text-dark border-0 bg-white">
                             <div class="card-body p-4 d-flex flex-column">
                                 <div class="d-flex justify-content-between align-items-start mb-3">
-                                    <h4 class="card-title mb-0 text-dark" style="font-size: 18px;">{{ sub.name }}</h4>
-                                    <span class="badge bg-success bg-opacity-10 text-success rounded-pill px-3 py-1">{{ sub.questions.count }} MCQs</span>
+                                    <h4 class="card-title mb-0 text-dark" style="font-size: 18px;">{{ item.subject.name }}</h4>
+                                    <span class="badge bg-success bg-opacity-10 text-success rounded-pill px-3 py-1">{{ item.total_questions }} MCQs</span>
                                 </div>
                                 <p class="card-text text-muted small flex-grow-1">Practice and track results. Dynamic explanation feedback is generated immediately upon question submission.</p>
                                 
-                                {% if sub.questions.count > 0 %}
-                                    <a href="{% url 'exam' sub.id %}" class="btn btn-green w-100 py-2 mt-3">
-                                        <i class="fa-solid fa-play me-1"></i> Start Practice Quiz
-                                    </a>
+                                {% if item.total_questions > 0 %}
+                                    <div class="mt-3">
+                                        <p class="small text-muted mb-2 fw-bold">Select a Set to Practice:</p>
+                                        <div class="d-flex flex-wrap gap-2">
+                                            {% for set in item.sets %}
+                                                {% if set.is_unlocked %}
+                                                    <a href="{% url 'exam' item.subject.id %}?set={{ set.number }}" class="btn btn-sm btn-outline-success">
+                                                        Set {{ set.number }}
+                                                    </a>
+                                                {% else %}
+                                                    <button class="btn btn-sm btn-outline-secondary" disabled title="Finish Set {{ set.number|add:"-1" }} to unlock">
+                                                        <i class="fa-solid fa-lock fa-sm me-1"></i> Set {{ set.number }}
+                                                    </button>
+                                                {% endif %}
+                                            {% endfor %}
+                                        </div>
+                                    </div>
                                 {% else %}
                                     <button class="btn btn-secondary w-100 py-2 mt-3" disabled>
                                         <i class="fa-solid fa-lock me-1"></i> No Questions Added

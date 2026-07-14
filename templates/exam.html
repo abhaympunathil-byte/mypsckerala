@@ -20,7 +20,11 @@
     <div class="d-flex justify-content-between align-items-center mb-4 pb-3 border-bottom border-light">
         <div>
             <h1 class="text-dark mb-1">{{ subject.name }} MCQ Practice</h1>
-            <p class="text-muted mb-0">Topic-based school practice modules.</p>
+            <p class="text-muted mb-0">Topic-based school practice modules. 
+                {% if questions.paginator.num_pages > 1 %}
+                    (Set {{ questions.number }} of {{ questions.paginator.num_pages }})
+                {% endif %}
+            </p>
         </div>
         <a href="{% url 'subjects' subject.class_level.id %}" class="btn btn-outline-secondary btn-sm" onclick="return confirm('Exit current practice quiz? Progress will not be saved.')">
             <i class="fa-solid fa-right-from-bracket me-1"></i> Exit practice
@@ -125,6 +129,11 @@
                 </div>
 
                 <div class="d-flex flex-column flex-sm-row justify-content-center gap-3">
+                    {% if questions.has_next %}
+                        <a href="?set={{ questions.next_page_number }}" class="btn btn-primary py-3 px-4">
+                            Next Set <i class="fa-solid fa-arrow-right ms-1"></i>
+                        </a>
+                    {% endif %}
                     <a href="{% url 'subjects' subject.class_level.id %}" class="btn btn-green-outline py-3 px-4">
                         <i class="fa-solid fa-rotate-left me-1"></i> Practice More Topics
                     </a>

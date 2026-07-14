@@ -1,6 +1,7 @@
 import random
 import json
 from django.shortcuts import render, redirect, get_object_or_404
+from django.core.paginator import Paginator
 from django.contrib.auth import login, logout, authenticate
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
@@ -202,9 +203,54 @@ def subjects_view(request, class_id):
     subjects = class_level.subjects.all().order_by('name')
     study_notes = class_level.study_notes.all().order_by('title')
     
+    # Fetch all question IDs attempted by the user in this class level
+    user_attempts = UserPerformance.objects.filter(
+        user=request.user, 
+        question__subject__class_level=class_level
+    ).values_list('question_id', flat=True)
+    attempted_qids = set(user_attempts)
+    
+    subject_data_list = []
+    
+    for subject in subjects:
+        questions_list = list(subject.questions.all().order_by('id').values_list('id', flat=True))
+        
+        sets = []
+        set_size = 25
+        num_sets = (len(questions_list) + set_size - 1) // set_size
+        
+        previous_set_finished = True
+        
+        for i in range(num_sets):
+            set_number = i + 1
+            start_idx = i * set_size
+            end_idx = start_idx + set_size
+            set_qids = questions_list[start_idx:end_idx]
+            
+            attempted_in_set = sum(1 for qid in set_qids if qid in attempted_qids)
+            is_finished = (attempted_in_set == len(set_qids)) and len(set_qids) > 0
+            
+            is_unlocked = previous_set_finished
+            
+            sets.append({
+                'number': set_number,
+                'is_unlocked': is_unlocked,
+                'is_finished': is_finished,
+                'attempted': attempted_in_set,
+                'total': len(set_qids)
+            })
+            
+            previous_set_finished = is_finished
+            
+        subject_data_list.append({
+            'subject': subject,
+            'total_questions': len(questions_list),
+            'sets': sets
+        })
+    
     context = {
         'class_level': class_level,
-        'subjects': subjects,
+        'subject_data_list': subject_data_list,
         'study_notes': study_notes
     }
     return render(request, 'subjects.html', context)
@@ -218,13 +264,42 @@ def exam_view(request, subject_id):
         messages.error(request, "Subject not found.")
         return redirect('dashboard')
         
-    questions = subject.questions.all().order_by('id')
+    questions_list = subject.questions.all().order_by('id')
     
-    if not questions.exists():
+    if not questions_list.exists():
         messages.warning(request, f"No questions available for {subject.name} yet.")
         return redirect('subjects', class_id=subject.class_level.id)
+
+    # Protection: check if the requested set is unlocked
+    try:
+        page_number = int(request.GET.get('set', 1))
+    except ValueError:
+        page_number = 1
+
+    if page_number > 1:
+        # Check if previous set was finished
+        set_size = 25
+        prev_start_idx = (page_number - 2) * set_size
+        prev_end_idx = prev_start_idx + set_size
         
-    return render(request, 'exam.html', {'subject': subject, 'questions': questions})
+        all_qids = list(questions_list.values_list('id', flat=True))
+        prev_set_qids = all_qids[prev_start_idx:prev_end_idx]
+        
+        if prev_set_qids:
+            attempted_count = UserPerformance.objects.filter(
+                user=request.user,
+                question_id__in=prev_set_qids
+            ).values('question_id').distinct().count()
+            
+            if attempted_count < len(prev_set_qids):
+                messages.error(request, "You must finish the previous set before accessing this one.")
+                return redirect('subjects', class_id=subject.class_level.id)
+
+    # Divide into sets of 25
+    paginator = Paginator(questions_list, 25)
+    page_obj = paginator.get_page(page_number)
+        
+    return render(request, 'exam.html', {'subject': subject, 'questions': page_obj})
 
 
 @login_required
